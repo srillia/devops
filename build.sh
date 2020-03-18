@@ -1,72 +1,152 @@
 #!/bin/bash
 
+function parse_params() {
+        case "$1" in
+        -h)  echo $1 ; exit1;;
+        *) 
+                dic[cmd_1]=$1
+                shift 1
+                echo $1
+                case "$1" in
+                -h)  echo $1 ; exit1;;
+                *)
+                        dic[cmd_2]=$1
+                        shift 1
+                        echo $1
+                        while [ true ] ; do
+                                if [[ $1 == -* ]];then
+                                        echo $2
+                                        case "$1" in
+                                        --build-tool) dic[opt_build_tool]=$2; shift 2;;
+                                        --git-url) dic[opt_git_url]=$2;  shift 2;;
+                                        --svn-url) dic[opt_svn_url]=$2; shift 2;;
+                                        --build-env) dic[opt_build_env]=$2; shift 2;;
+                                        --dockerfile) dic[opt_dockerfile]=$2; shift 2;;
+					--template) dic[opt_template]=$2; shift 2;;
+                                        *) echo "unknown parameter or command $1 ." ; exit 1 ; break;;
+                                        esac
+                                else
+                                        dic[cmd_3]=$1
+                                        shift 1
+                                        break
+                                fi
+                        done
+
+                ;;  esac
+        ;; esac
+load_env_by_opt_env_prarm
+}
+
+function load_env_by_opt_env_prarm() {
+	if [ -n "${dic[opt_build_env]}" ]; then
+        	#读取构建环境变量
+       	 	source ${dic[cfg_workspace_path]}/env/${dic[cfg_build_env]}
+        	dic[cfg_main_project_name]=${build_env%%-*}
+        	dic[cfg_java_extra_opts]=$BUILD_JAVA_EXTRA_OPTS
+	fi
+}
+
+function run() {
+        case ${dic[cmd_1]} in
+        run) 
+		echo "${dic[cmd_2]}"
+                if test -n ${dic[cmd_2]}; then
+                        ${dic[cmd_2]}
+                else
+                        echo "run need be followed by a cammand"; exit 1
+                fi
+         ;;
+        *) echo "cannot find the cammand ${dic[cmd_1]}"; exit 1 ; ;;
+	esac
+}
+
+function check_post_parmas() {
+	echo "cmd_3 : ${dic[cmd_3]}"
+ 	if [[ -z ${dic[cmd_3]} ]];then
+                echo "job name can not be null ## $1 ##."; exit 1;
+	 fi
+	dic[cmd_job_name]=${dic[cmd_3]} 
+	dic[cfg_temp_dir]=/tmp/devops/${dic[cmd_job_name]}
+}
+
+
 function java() {
-
-	scm $dic
-
-	java_build $dic
-
-	cp_dockerfile $dic
-
-	java_build_image $dic
-
-	render_template $dic
-
-	deploy $dic
-
-	prune $dic
+        #检测前置参数
+	check_post_parmas
+	#从版本管理工具加载代码
+	scm 
+	#执行java构建
+	java_build 
+	#复制dockerfile文件
+	cp_dockerfile 
+	#构建java镜像
+	java_build_image 
+	#渲染模板
+	render_template 
+	#执行部署
+	deploy 
+	#清除冗余镜像
+	prune
 
 }
 
 function node() {
-	dic=$1
 
-	scm $dic
+	check_post_parmas
 
-	node_build $dic
+	scm 
 
-	cp_dockerfile $dic
+	node_build 
 
-	node_build_image $dic
+	cp_dockerfile 
 
-	render_template $dic
+	node_build_image 
 
-	deploy $dic
+	render_template 
 
-	prune $dic
+	deploy 
+
+	prune 
 
 }
 
 function scm() {
-	dic=$1
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 	opt_git_url=${dic[opt_git_url]}
 	opt_svn_url=${dic[opt_svn_url]}
 
-	if [-z $opt_git_url ]; then 
+	if [ -n "$opt_git_url" ]; then 
+                echo "into git clone"
 		#克隆代码
-		git clone $git_url  $cfg_temp_dir
+		git clone $opt_git_url  $cfg_temp_dir
+		cd $cfg_temp_dir
 		#生成日期和git日志版本后六位
 		date=`date +%Y-%m-%d_%H-%M-%S`
 		last_log=`git log --pretty=format:%h | head -1`
 		echo -e "\n关键变量值:\n last_log:$last_log\n"
 		dic[tmp_docker_image_suffix]="${date}_${last_log}"
-	elif [ -z $opt_svn_url ]; then 
-		echo 'do svn thing'
-	 	# to do
+	elif [ -n "$opt_svn_url" ]; then 
+		echo 'into svn checkout'
+		svn checkout $opt_svn_url $cfg_temp_dir
+		cd $cfg_temp_dir
+		date=`date +%Y-%m-%d_%H-%M-%S`
+		tmp_log=`svn log | head -2 | tail -1`
+		last_log=${tmp_log%% *}
+		echo -e "\n关键变量值:\n last_log:$last_log\n"
+                dic[tmp_docker_image_suffix]="${date}_${last_log}"
 	else 
 		echo "--git-url and --svn-url must has one"; exit 1;
 	fi
 }
 
 function java_build() {
-	dic=$1
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 	cmd_job_name=${dic[cmd_job_name]}
 	opt_build_tool=${dic[opt_build_tool]}
 	case "$opt_build_tool"  in
 	gradle)
 		module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
+		if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
 		echo -e "\n关键变量值:\n module_path:$module_path\n"
 		#构建代码
 		cd $module_path && gradle -x test clean build
@@ -81,37 +161,45 @@ function java_build() {
 }
 
 function node_build() {
-	dic=$1
-	cfg_temp_dir=${dic[cfg_temp_dir]}
+        cfg_temp_dir=${dic[cfg_temp_dir]}
+        cmd_job_name=${dic[cmd_job_name]}
+
+        module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
+        if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
 	#构建代码
-	cd $cfg_temp_dir && npm install && npm run build
-	dic[tmp_build_dist_path]=$cfg_temp_dir/
+	cd $module_path && npm --unsafe-perm install && npm run build
+	dic[tmp_build_dist_path]=$module_path/dist
 }
 
 function cp_dockerfile() {
-	dic=$1
+	opt_dockerfile=${dic[opt_dockerfile]}
 	cfg_dockerfile_path=${dic[cfg_dockerfile_path]}
 	cfg_enable_dockerfiles=${dic[cfg_enable_dockerfiles]}
 	tmp_build_dist_path=${dic[tmp_build_dist_path]}
-
-	dockerfiles=(${cfg_enable_dockerfiles//,/ })
-	echo "关键变量:cfg_enable_dockerfiles:$cfg_enable_dockerfiles,dockerfiles:$dockerfiles"
-	is_has_enable_docker_file=false
-	for dockerfile in ${dockerfiles[@]} ;do
-		if [[ $module_name == $dockerfile ]]
-		then
-		   cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
-		   is_has_enable_docker_file=true
+	echo "opt-dockerfile ${opt_dockerfile}"
+	if test -n "${opt_dockerfile}"
+	then
+		echo " into opt-dockerfile"
+   		cp $cfg_dockerfile_path/${opt_dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
+	else
+		dockerfiles=(${cfg_enable_dockerfiles//,/ })
+		echo "关键变量:cfg_enable_dockerfiles:$cfg_enable_dockerfiles,dockerfiles:$dockerfiles"
+		is_has_enable_docker_file=false
+		for dockerfile in ${dockerfiles[@]} ;do
+			if [[ $module_name == $dockerfile ]]
+			then
+			   cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
+			   is_has_enable_docker_file=true
+			fi
+		done
+		if [ "$is_has_enable_docker_file" = false ]; then
+		   cp $cfg_dockerfile_path/dockerfile ${tmp_build_dist_path}/
 		fi
-	done
-	if [ "$is_has_enable_docker_file" = false ]; then
-	   cp $cfg_dockerfile_path/dockerfile ${tmp_build_dist_path}/
 	fi
 }
 
 
 function java_build_image() {
-	dic=$1
 	cmd_job_name=${dic[cmd_job_name]}
 	cfg_harbor_address=${dic[cfg_harbor_address]}
 	cfg_harbor_project=${dic[cfg_harbor_project]}
@@ -136,7 +224,6 @@ function java_build_image() {
 }
 
 function node_build_image() {
-	dic=$1
 	cmd_job_name=${dic[cmd_job_name]}
 	cfg_harbor_address=${dic[cfg_harbor_address]}
 	cfg_harbor_project=${dic[cfg_harbor_project]}
@@ -144,11 +231,13 @@ function node_build_image() {
 	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}
 
 
-	# 查找jar包名
+	# build临时目标路径
 	cd ${tmp_build_dist_path}
 
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
+	echo "node_build_image-->image_path: $image_path"
+	tar -cf dist.tar *
 	docker build -t $image_path .
 
 	#推送镜像
@@ -158,8 +247,8 @@ function node_build_image() {
 
 
 function render_template() {
-	dic=$1
 	opt_build_env=${dic[opt_build_env]}
+	opt_template=${dic[opt_template]}
 	cfg_devops_path=${dic[cfg_devops_path]}
 	cfg_swarm_network=${dic[cfg_swarm_network]}
 	cfg_template_path=${dic[cfg_template_path]}
@@ -168,27 +257,31 @@ function render_template() {
 	tmp_image_path=${dic[tmp_image_path]}
 
 
+	cd $cfg_template_path
 	gen_long_time_str=`date +%s%N`
 
 	#取环境变量的前缀，获取主项目名称，主项目相关的deploy文件放在一下文件夹下
 	main_project_name=${opt_build_env%%-*}
 
-	#处理模板路由信息
-	templates=(${cfg_enable_templates//,/ })
-	is_has_enable_template=false
-	for template in ${templates[@]}
-	do
-	if [[ $cmd_job_name == $template ]]
-	then
-	   \cp ./$cmd_job_name-template.yml ./${gen_long_time_str}.yml
-	   is_has_enable_template=true
+	 #处理模板路由信息
+	if test -n "${opt_template}"; then
+		\cp ./${opt_template}-template.yml ./${gen_long_time_str}.yml
+	else
+		templates=(${cfg_enable_templates//,/ })
+	        is_has_enable_template=false
+	        for template in ${templates[@]}
+	        do
+	        if [[ $cmd_job_name == $template ]]
+	        then
+	           \cp ./$cmd_job_name-template.yml ./${gen_long_time_str}.yml
+	           is_has_enable_template=true
+       		fi
+	        done
+       		if [ "$is_has_enable_template" = false ]
+        	then
+            	\cp ./template.yml ./${gen_long_time_str}.yml
+        	fi
 	fi
-	done
-	if [ "$is_has_enable_template" = false ]
-	then
-	    \cp ./template.yml ./${gen_long_time_str}.yml
-	fi
-
 
 	#执行替换
 	sed -i "s#?module_name#${cmd_job_name}#g"  ./${gen_long_time_str}.yml
@@ -203,26 +296,26 @@ function render_template() {
 }
 
 function deploy() {
-	dic=$1
+        cfg_devops_path=${dic[cfg_devops_path]}
 	cfg_build_platform=${dic[cfg_build_platform]}
 	cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
+	cmd_job_name=${dic[cmd_job_name]}
 	#创建或者更新镜像
 	if [ "$cfg_build_platform" = "KUBERNETES" ]
 	then
 	    echo "build_platform_k8s"
-	    kubectl apply -f  ${current_path}/deploy/${module_name}/${module_name}.yml
+	    kubectl apply -f  ${cfg_devops_path}/deploy/${module_name}/${cmd_job_name}.yml
 	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
 	then
 	    echo "build_platform_docker_swarm"
-	    docker stack deploy -c ${current_path}/deploy/${main_project_name}/${module_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
+	    docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
 	else
 	    echo "build_platform_default"
-	    docker stack deploy -c ${current_path}/deploy/${main_project_name}/${module_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
+	    docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
 	fi
 }
 
 function prune() {
-	dic=$1
 	cfg_devops_path=${dic[cfg_devops_path]}
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 

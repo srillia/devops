@@ -1,147 +1,45 @@
 #!/bin/bash
 
-source ./build.sh
-
-#获取当前shell文件所在路径
-cfg_devops_path=$(dirname $(readlink -f "$0"))
-
-#加载激活配置
-source $cfg_devops_path/config/enable.conf
-enable_path=$ENABEL_PATH
-#加载配置
-source $cfg_devops_path/config/$enable_path/config.conf
-#读取配置变量
-cfg_harbor_address=$BUILD_HARBOR_ADDRESS
-cfg_harbor_project=$BUILD_HARBOR_PROJECT
-cfg_build_platform=$BUILD_PLATFORM
-cfg_swarm_stack_name=$BUILD_DOCKER_STACK_NAME
-cfg_enable_dockerfiles=$BUILD_ENABEL_DOCKERFILES
-cfg_swarm_network=$BUILD_DOCKER_SWARM_NETWORK
-cfg_enable_templates=$BUILD_ENABEL_TEMPLATES
-cfg_main_project_name=
-cfg_java_extra_opts=
-
-
-cfg_temp_dir=${cfg_devops_path}/.temp/$module_name
-
-cfg_dockerfile_path=$cfg_devops_path/config/$enable_path/dockerfile
-
-cfg_template_path=$cfg_devops_path/config/$enable_path/template
-
-#外部命令------------------
-cmd_1=run
-
-cmd_run_1=java
-#--------有默认值的参数
-opt_build_tool=gradle
-#--------必传参数
-#git_url svn_url二选一必传一个
-opt_git_url=
-opt_svn_url=
-#必传
-cmd_job_name=
-#--------没有默认值非必传参数
-opt_build_env=
-#外部命令------------------
-case "$1" in
-run)
-        cmd_1=$1
-        shift 1
-        echo $1
-        case "$1" in
-        java)
-                cmd_run_1=java
-                shift 1
-                echo $1
-                while [ true ] ; do
-                        if [[ $1 == -* ]];then
-                                echo $2
-                                case "$1" in
-                                --build-tool)
-                                        case "$2" in
-                                        gradle) opt_build_tool=$2; shift 2 ;;
-                                        maven) echo "into maven"; opt_build_tool=$2; shift 2 ;;
-                                        *)echo "unknown parameter $1 ." ; exit 1 ; break ;;
-                                        esac
-                                ;;
-                                --git-url) echo "into git-url $2"; opt_git_url=$2; echo "inner git-url $opt_git_url"; shift 2;;
-                                --svn-url) opt_svn_url=$2; shift 2;;
-                                --build-env) opt_build_env=$2; shift 2;;
-                                *) echo "unknown parameter $1 ." ; exit 1 ; break;;
-                                esac
-                        else
-                                cmd_job_name=$1
-                                shift 1
-                                break
-                        fi
-                done
-
-        ;;
-        node)
-                cmd_run_1=node
-                while [ true ] ; do
-                        if [[ $1 == -* ]];then
-                                case "$1" in
-                                --git-url) opt_git_url=$2; shift 2;;
-                                --svn-url) opt_svn_url=$2; shift 2;;
-                                --build-env) opt_build_env=$2; shift 2;;
-                                *) echo "unknown parameter $1 ." ; exit 1 ; break;;
-                                esac
-                        else
-                                cmd_job_name=$1
-                                shift 1
-                                break
-                        fi
-                done
-
-                ;;
-        *) echo "unknown command or option $1." ; exit 1 ;  ;;
-        esac
-        ;;
-
--h)  echo $1;;
-*) echo "unknown command or option $1." ; exit 1 ; ;;
-esac
-
-if [[ -z $cmd_job_name ]];then
-        echo "job name can not be null ## $1 ##."; exit 1;
-fi
-
-echo "$opt_git_url $opt_svn_url"
-
-if [ -z "$opt_git_url"  -a  -z "$opt_svn_url" ]; then
-        echo "--git-url and --svn-url must has one"; exit 1;
-fi
-
-if [ -z "$opt_build_env" ]; then
-        #读取构建环境变量
-        source $cfg_devops_path/config/$enable_path/env/$build_env
-        cfg_main_project_name=${build_env%%-*}
-        cfg_java_extra_opts=$BUILD_JAVA_EXTRA_OPTS
-fi
 
 #必须先声明
 declare -A dic
-dic=(   [cfg_devops_path]=$cfg_devops_path
-        [cfg_harbor_address]=$cfg_harbor_address
-        [cfg_harbor_project]=$cfg_harbor_project
-        [cfg_build_platform]=$cfg_build_platform
-        [cfg_swarm_stack_name]=$cfg_swarm_stack_name
-        [cfg_temp_dir]=$cfg_temp_dir
-        [cfg_dockerfile_path]=$cfg_dockerfile_path
-        [cfg_swarm_network]=$cfg_swarm_network
-        [cfg_template_path]=$cfg_template_path
-        [cfg_enable_templates]=$cfg_enable_templates
-        [cfg_enable_dockerfiles]=$cfg_enable_dockerfiles
-        [cfg_main_project_name]=$cfg_main_project_name
-        [cfg_java_extra_opts]=$cfg_java_extra_opts
-        [cmd_1]=$cmd_1
-        [cmd_run_1]=$cmd_run_1
-        [opt_build_tool]=$opt_build_tool
-        [opt_git_url]=$opt_git_url
-        [opt_svn_url]=$opt_svn_url
-        [cmd_job_name]=$cmd_job_name
-        [opt_build_env]=$opt_build_env)
 
-$cmd_run_1 $dic
-#echo "cmd_1:$cmd_1,cmd_run_1:$cmd_run_1,opt_build_tool:$opt_build_tool,opt_git_url:$opt_git_url,opt_svn_url:$opt_svn_url,opt_build_env:$opt_build_env,cmd_run_job_name:$cmd_run_job_name"
+source ./build.sh
+
+#获取当前shell文件所在路径
+dic[cfg_devops_path]=$(dirname $(readlink -f "$0"))
+
+#加载激活配置
+source ${dic[cfg_devops_path]}/config/enable.conf
+dic[cfg_enable_path]=$ENABEL_PATH
+dic[cfg_workspace_path]=${dic[cfg_devops_path]}/config/${dic[cfg_enable_path]}
+#加载配置
+source ${dic[cfg_workspace_path]}/config.conf
+#读取配置变量
+dic[cfg_harbor_address]=$BUILD_HARBOR_ADDRESS
+dic[cfg_harbor_project]=$BUILD_HARBOR_PROJECT
+dic[cfg_build_platform]=$BUILD_PLATFORM
+dic[cfg_swarm_stack_name]=$BUILD_DOCKER_STACK_NAME
+dic[cfg_enable_dockerfiles]=$BUILD_ENABEL_DOCKERFILES
+dic[cfg_swarm_network]=$BUILD_DOCKER_SWARM_NETWORK
+dic[cfg_enable_templates]=$BUILD_ENABEL_TEMPLATES
+dic[cfg_main_project_name]=
+dic[cfg_java_extra_opts]=
+
+
+dic[cfg_dockerfile_path]=${dic[cfg_workspace_path]}/dockerfile
+
+dic[cfg_template_path]=${dic[cfg_workspace_path]}/template
+
+#java命令，选项默认值
+dic[opt_build_tool]=gradle
+
+
+
+parse_params $@
+
+case ${dic[cmd_1]} in
+        run) run $dic; ;;
+        *) echo "cannot find the cammand ${dic[cmd_1]}"; exit1 ; ;;
+esac
+
