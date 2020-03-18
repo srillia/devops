@@ -13,12 +13,14 @@
 
 ./devops run node --svn-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
 
+./devops run java --git-url https://github.com/springframeworkguru/helloworld.git --build-tool maven hello-world
+
 ```
 
 ## 详细说明
 + 可以构建java项目，或者node的vue项目，更多语言构建支持后续发布
 + 可以选择不同的代码管理工具 --git-url --svn-url,这两个是必传参数
-+ 可以选择不同的构建工具，java项目下，可以选择，gradle模式，或者maven模式(代码没上)
++ 可以选择不同的构建工具，java项目下，可以选择，gradle模式，或者maven模式
 + 可以选择不同的构建平台，docker-swarm,或者k8s,通过配置文件配置config.conf中
 
 ## 项目结构

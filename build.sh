@@ -143,17 +143,21 @@ function java_build() {
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 	cmd_job_name=${dic[cmd_job_name]}
 	opt_build_tool=${dic[opt_build_tool]}
+
+	module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
+        if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
+        echo -e "\n关键变量值:\n module_path:$module_path\n"
+
 	case "$opt_build_tool"  in
 	gradle)
-		module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
-		if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
-		echo -e "\n关键变量值:\n module_path:$module_path\n"
 		#构建代码
 		cd $module_path && gradle -x test clean build
 		dic[tmp_build_dist_path]=$module_path/build/libs
 	 ;;
 	maven)
-	   echo 'do maven thing'
+	   	echo 'do maven thing'
+		cd $module_path && mvn clean -Dmaven.test.skip=true  compile package -U -am
+		dic[tmp_build_dist_path]=$module_path/target
        	#to do
 	 ;;
 	*) echo "java project only support gradle or maven build"; exit 1; ;;
