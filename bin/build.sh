@@ -330,7 +330,7 @@ function deploy() {
 	then
 		check_env_by_cmd_v kubectl
 		echo "build_platform_k8s"
-	    	kubectl apply -f  ${cfg_devops_path}/deploy/${module_name}/${cmd_job_name}.yml
+	    	kubectl apply -f  ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml
 	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
 	then
 	    	echo "build_platform_docker_swarm"
