@@ -8,20 +8,17 @@ function check_env_by_cmd_v() {
 
 function parse_params() {
         case "$1" in
-        -h)  echo $1 ; exit1;;
+        -h)  echo "the help of $1 ,to do" ; exit1;;
         *) 
                 dic[cmd_1]=$1
                 shift 1
-                echo $1
                 case "$1" in
-                -h)  echo $1 ; exit1;;
+                -h)  echo "the help of $1 ,to do" ; exit1;;
                 *)
                         dic[cmd_2]=$1
                         shift 1
-                        echo $1
                         while [ true ] ; do
                                 if [[ $1 == -* ]];then
-                                        echo $2
                                         case "$1" in
                                         --build-tool) dic[opt_build_tool]=$2; shift 2;;
                                         --git-url) dic[opt_git_url]=$2;  shift 2;;
@@ -40,7 +37,7 @@ function parse_params() {
 
                 ;;  esac
         ;; esac
-load_env_by_opt_env_prarm
+	load_env_by_opt_env_prarm
 }
 
 function load_env_by_opt_env_prarm() {
