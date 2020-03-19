@@ -73,7 +73,6 @@ meal 示例工作目录,同级的都是示例工作目录
 #### 示例工作目录 meal
 + config.conf 当前工作空间的主配置文件
 + dockerfile 存放每一个服务的dockerfile
-+ env 存放不同服务，不同环境的文件
 + template 存放，不同构建平台的模板文件，支持docker-swarm,k8s等平台
 ### readme.md
 + 项目简介文件
