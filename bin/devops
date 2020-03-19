@@ -4,12 +4,15 @@
 #必须先声明
 declare -A dic
 
-source ./build.sh
-
 #获取当前shell文件所在路径
-dic[cfg_devops_path]=$(dirname $(readlink -f "$0"))
+dic[cfg_devops_bin_path]=$(dirname $(readlink -f "$0"))
 
-#加载激活配置
+source ${dic[cfg_devops_bin_path]}/build.sh
+
+#devops项目所在路径
+dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
+
+#激活配置
 source ${dic[cfg_devops_path]}/config/enable.conf
 dic[cfg_enable_path]=$ENABEL_PATH
 dic[cfg_workspace_path]=${dic[cfg_devops_path]}/config/${dic[cfg_enable_path]}

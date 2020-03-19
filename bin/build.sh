@@ -266,6 +266,7 @@ function render_template() {
 
 	#取环境变量的前缀，获取主项目名称，主项目相关的deploy文件放在一下文件夹下
 	main_project_name=${opt_build_env%%-*}
+	if test -z $main_project_name ; then main_project_name="orphan" ; fi
 
 	 #处理模板路由信息
 	if test -n "${opt_template}"; then
