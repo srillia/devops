@@ -1,4 +1,10 @@
 #!/bin/bash
+source ${dic[cfg_devops_bin_path]}/log.sh
+
+function check_env_by_cmd_v() {
+        command -v $1 >/dev/null 2>&1 || { error "Need to install ##$1## command first and run this script again.";
+ }
+}
 
 function parse_params() {
         case "$1" in
@@ -67,6 +73,7 @@ function check_post_parmas() {
 	 fi
 	dic[cmd_job_name]=${dic[cmd_3]} 
 	dic[cfg_temp_dir]=/tmp/devops/${dic[cmd_job_name]}
+	rm -rf ${dic[cfg_temp_dir]}
 }
 
 
@@ -116,6 +123,8 @@ function scm() {
 	opt_svn_url=${dic[opt_svn_url]}
 
 	if [ -n "$opt_git_url" ]; then 
+		check_env_by_cmd_v git
+
                 echo "into git clone"
 		#克隆代码
 		git clone $opt_git_url  $cfg_temp_dir
@@ -126,6 +135,7 @@ function scm() {
 		echo -e "\n关键变量值:\n last_log:$last_log\n"
 		dic[tmp_docker_image_suffix]="${date}_${last_log}"
 	elif [ -n "$opt_svn_url" ]; then 
+		check_env_by_cmd_v svn
 		echo 'into svn checkout'
 		svn checkout $opt_svn_url $cfg_temp_dir
 		cd $cfg_temp_dir
@@ -150,11 +160,14 @@ function java_build() {
 
 	case "$opt_build_tool"  in
 	gradle)
+		check_env_by_cmd_v gradle
+
 		#构建代码
 		cd $module_path && gradle -x test clean build
 		dic[tmp_build_dist_path]=$module_path/build/libs
 	 ;;
 	maven)
+		check_env_by_cmd_v mvn
 	   	echo 'do maven thing'
 		cd $module_path && mvn clean -Dmaven.test.skip=true  compile package -U -am
 		dic[tmp_build_dist_path]=$module_path/target
@@ -167,6 +180,8 @@ function java_build() {
 function node_build() {
         cfg_temp_dir=${dic[cfg_temp_dir]}
         cmd_job_name=${dic[cmd_job_name]}
+	
+	check_env_by_cmd_v npm	
 
         module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
@@ -214,6 +229,8 @@ function java_build_image() {
 	# 查找jar包名
 	cd ${tmp_build_dist_path}
 	jar_name=`ls | grep -v 'source'| grep ${cmd_job_name}`
+	
+	check_env_by_cmd_v docker
 
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
@@ -237,7 +254,7 @@ function node_build_image() {
 
 	# build临时目标路径
 	cd ${tmp_build_dist_path}
-
+	check_env_by_cmd_v docker
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
 	echo "node_build_image-->image_path: $image_path"
@@ -308,15 +325,16 @@ function deploy() {
 	#创建或者更新镜像
 	if [ "$cfg_build_platform" = "KUBERNETES" ]
 	then
-	    echo "build_platform_k8s"
-	    kubectl apply -f  ${cfg_devops_path}/deploy/${module_name}/${cmd_job_name}.yml
+		check_env_by_cmd_v kubectl
+		echo "build_platform_k8s"
+	    	kubectl apply -f  ${cfg_devops_path}/deploy/${module_name}/${cmd_job_name}.yml
 	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
 	then
-	    echo "build_platform_docker_swarm"
-	    docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
+	    	echo "build_platform_docker_swarm"
+	    	docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
 	else
-	    echo "build_platform_default"
-	    docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
+		echo "build_platform_default"
+		docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
 	fi
 }
 

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 #必须先声明
 declare -A dic
 
@@ -8,6 +7,8 @@ declare -A dic
 dic[cfg_devops_bin_path]=$(dirname $(readlink -f "$0"))
 
 source ${dic[cfg_devops_bin_path]}/build.sh
+source ${dic[cfg_devops_bin_path]}/log.sh
+
 
 #devops项目所在路径
 dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
@@ -41,6 +42,8 @@ dic[opt_build_tool]=gradle
 
 
 parse_params $@
+
+
 
 case ${dic[cmd_1]} in
         run) run $dic; ;;
