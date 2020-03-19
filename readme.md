@@ -34,13 +34,17 @@ devops目录下workspace 中的enabel.conf文件，配置你的工作目录，�
 
 示例用法 
 ```
-devops run java --git-url http://192.168.10.44/sample/sample.git --build-env sample-dev sample
+devops run java --git-url http://192.168.10.44/sample/sample.git --java-opts "--profile=dev" sample
 
 devops run node --git-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
 
 devops run node --svn-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
 
 devops run java --git-url https://github.com/springframeworkguru/helloworld.git --build-tool maven hello-world
+
+devops run vue --svn-url https://192.168.10.253/svn/sample  --dockerfile node --template node --build-env "dev" sample
+
+devops run vue --svn-url https://192.168.10.253/svn/sample  --dockerfile node --template node --build-cmds "npm run build:test" sample
 
 ```
 

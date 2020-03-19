@@ -30,7 +30,7 @@ function parse_params() {
 					--template) dic[opt_template]=$2; shift 2;;
 					--git-branch) dic[opt_git_branch]=$2; shift 2;;
 					--build-cmds) dic[opt_build_cmds]=$2; shift 2;;
-                                        --vue-env) dic[opt_vue_env]=$2; shift 2;;
+                                        --build-env) dic[opt_build_env]=$2; shift 2;;
                                         *)         echo $2 echo "unknown parameter or command $1 ." ; exit 1 ; break;;
                                         esac
                                 else
@@ -87,17 +87,17 @@ function java() {
 
 }
 
-function node() {
+function vue() {
 
 	check_post_parmas
 
 	scm 
 
-	node_build 
+	vue_build 
 
 	cp_dockerfile 
 
-	node_build_image 
+	vue_build_image 
 
 	render_template 
 
@@ -148,23 +148,33 @@ function java_build() {
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 	cmd_job_name=${dic[cmd_job_name]}
 	opt_build_tool=${dic[opt_build_tool]}
+	opt_build_cmds=${dic[opt_build_cmds]}
 
 	module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
         echo -e "\n关键变量值:\n module_path:$module_path\n"
 
+
 	case "$opt_build_tool"  in
 	gradle)
 		check_env_by_cmd_v gradle
-
+	
 		#构建代码
-		cd $module_path && gradle -x test clean build
+		if test -n "$opt_build_cmds" ;then
+			d $module_path && $opt_build_cmds
+        	else
+			cd $module_path && gradle -x test clean build
+        	fi
 		dic[tmp_build_dist_path]=$module_path/build/libs
 	 ;;
 	maven)
 		check_env_by_cmd_v mvn
-	   	echo 'do maven thing'
-		cd $module_path && mvn clean -Dmaven.test.skip=true  compile package -U -am
+		 #构建代码
+                if test -n "$opt_build_cmds" ;then
+			cd $module_path && ${opt_build_cmds}
+		else
+			cd $module_path && mvn clean -Dmaven.test.skip=true  compile package -U -am
+		fi
 		dic[tmp_build_dist_path]=$module_path/target
        	#to do
 	 ;;
@@ -172,23 +182,23 @@ function java_build() {
     	esac
 }
 
-function node_build() {
+function vue_build() {
         cfg_temp_dir=${dic[cfg_temp_dir]}
         cmd_job_name=${dic[cmd_job_name]}
 	opt_build_cmds=${dic[opt_build_cmds]}
-	opt_vue_env=${dic[opt_vue_env]}	
+	opt_build_env=${dic[opt_build_env]}	
 
 	check_env_by_cmd_v npm	
 
         module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
 	if test -n "$opt_build_cmds" ;then
-		cd $module_path && $opt_build_cmds
+		cd $module_path &&  npm --unsafe-perm install && $opt_build_cmds
 	else
-		if test -n "$opt_vue_env" ;then
-			cd $module_path && npm --unsafe-perm install && vue-cli-service build --mode $opt_vue_env
+		if test -n "$opt_build_env" ;then
+			cd $module_path && npm --unsafe-perm install && npm run build:$opt_build_env
 		else
-			cd $module_path && npm --unsafe-perm install && vue-cli-service build
+			cd $module_path && npm --unsafe-perm install && npm run build
 		fi
 	fi
 	dic[tmp_build_dist_path]=$module_path/dist
@@ -248,7 +258,7 @@ function java_build_image() {
 	dic[tmp_image_path]=$image_path
 }
 
-function node_build_image() {
+function vue_build_image() {
 	cmd_job_name=${dic[cmd_job_name]}
 	cfg_harbor_address=${dic[cfg_harbor_address]}
 	cfg_harbor_project=${dic[cfg_harbor_project]}
@@ -261,7 +271,7 @@ function node_build_image() {
 	check_env_by_cmd_v docker
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
-	echo "node_build_image-->image_path: $image_path"
+	echo "vue_build_image-->image_path: $image_path"
 	tar -cf dist.tar *
 	docker build -t $image_path .
 
