@@ -31,7 +31,7 @@ function parse_params() {
 					--git-branch) dic[opt_git_branch]=$2; shift 2;;
 					--build-cmds) dic[opt_build_cmds]=$2; shift 2;;
                                         --build-env) dic[opt_build_env]=$2; shift 2;;
-                                        *)         echo $2 echo "unknown parameter or command $1 ." ; exit 1 ; break;;
+                                        *) error "unknown parameter or command $1 ." ; exit 1 ; break;;
                                         esac
                                 else
                                         dic[cmd_3]=$1
@@ -77,13 +77,13 @@ function run() {
                         echo "run need be followed by a cammand"; exit 1
                 fi
          ;;
-        *) echo "cannot find the cammand ${dic[cmd_1]}"; exit 1 ; ;;
+        *) error "cannot find the cammand ${dic[cmd_1]}"; exit 1 ; ;;
 	esac
 }
 
 function check_post_parmas() {
  	if [[ -z ${dic[cmd_3]} ]];then
-                echo "job name can not be null ## $1 ##."; exit 1;
+                warn "job name can not be null ## $1 ##."; exit 1;
 	 fi
 	dic[cmd_job_name]=${dic[cmd_3]} 
 	dic[cfg_temp_dir]=/tmp/devops/${dic[cmd_job_name]}
@@ -139,34 +139,30 @@ function scm() {
 
 	if [ -n "$opt_git_url" ]; then 
 		check_env_by_cmd_v git
-
-                info "scm 使用 git 拉取代码"
 		#克隆代码
 		if test -n "${opt_git_branch}" ; then
-			info "使用分支 ${opt_git_branch} 拉取代码"
+			info "开始使用git拉取代码,当前分支:${opt_git_branch}"
 			git clone -b  ${opt_git_branch}  --single-branch $opt_git_url  $cfg_temp_dir
 		else 
-			 info "使用默认分支 拉取代码"
+			 info "开始使用git拉取代码,当前使用默认分支"
 		        git clone --single-branch $opt_git_url  $cfg_temp_dir
 		fi
 		cd $cfg_temp_dir
 		#生成日期和git日志版本后六位
 		date=`date +%Y-%m-%d_%H-%M-%S`
 		last_log=`git log --pretty=format:%h | head -1`
-		echo -e "\n关键变量值:\n last_log:$last_log\n"
 		dic[tmp_docker_image_suffix]="${date}_${last_log}"
 	elif [ -n "$opt_svn_url" ]; then 
 		check_env_by_cmd_v svn
-		info 'scm 使用 svn 拉取代码'
+		info '开始使用 svn 拉取代码'
 		svn checkout $opt_svn_url $cfg_temp_dir
 		cd $cfg_temp_dir
 		date=`date +%Y-%m-%d_%H-%M-%S`
 		tmp_log=`svn log | head -2 | tail -1`
 		last_log=${tmp_log%% *}
-		echo -e "\n关键变量值:\n last_log:$last_log\n"
                 dic[tmp_docker_image_suffix]="${date}_${last_log}"
 	else 
-		echo "--git-url and --svn-url must has one"; exit 1;
+		error "--git-url and --svn-url must has one"; exit 1;
 	fi
 }
 
@@ -178,16 +174,15 @@ function java_build() {
 
 	module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
-        echo -e "\n关键变量值:\n module_path:$module_path\n"
 
 
 	case "$opt_build_tool"  in
 	gradle)
 		check_env_by_cmd_v gradle
-	
+		info "开始使用gradle构建项目"
 		#构建代码
 		if test -n "$opt_build_cmds" ;then
-			d $module_path && $opt_build_cmds
+			cd $module_path && $opt_build_cmds
         	else
 			cd $module_path && gradle -x test clean build
         	fi
@@ -195,6 +190,7 @@ function java_build() {
 	 ;;
 	maven)
 		check_env_by_cmd_v mvn
+		info "开始使用gradle构建项目"
 		 #构建代码
                 if test -n "$opt_build_cmds" ;then
 			cd $module_path && ${opt_build_cmds}
@@ -204,7 +200,7 @@ function java_build() {
 		dic[tmp_build_dist_path]=$module_path/target
        	#to do
 	 ;;
-	*) echo "java project only support gradle or maven build"; exit 1; ;;
+	*) warn "java project only support gradle or maven build"; exit 1; ;;
     	esac
 }
 
@@ -215,7 +211,7 @@ function vue_build() {
 	opt_build_env=${dic[opt_build_env]}	
 
 	check_env_by_cmd_v npm	
-
+	info "开始使用node构建vue项目"
         module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
 	if test -n "$opt_build_cmds" ;then
@@ -235,14 +231,12 @@ function cp_dockerfile() {
 	cfg_dockerfile_path=${dic[cfg_dockerfile_path]}
 	cfg_enable_dockerfiles=${dic[cfg_enable_dockerfiles]}
 	tmp_build_dist_path=${dic[tmp_build_dist_path]}
-	echo "opt-dockerfile ${opt_dockerfile}"
+	#info "开始复制dockerfile到构建目录"
 	if test -n "${opt_dockerfile}"
 	then
-		echo " into opt-dockerfile"
    		cp $cfg_dockerfile_path/${opt_dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 	else
 		dockerfiles=(${cfg_enable_dockerfiles//,/ })
-		echo "关键变量:cfg_enable_dockerfiles:$cfg_enable_dockerfiles,dockerfiles:$dockerfiles"
 		is_has_enable_docker_file=false
 		for dockerfile in ${dockerfiles[@]} ;do
 			if [[ $module_name == $dockerfile ]]
@@ -274,7 +268,6 @@ function java_build_image() {
 	jar_name=`ls | grep -v 'source'| grep ${cmd_job_name}`
 	
 	check_env_by_cmd_v docker
-	echo "opt_java_opts:$opt_java_opts"
 
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
@@ -283,6 +276,7 @@ function java_build_image() {
 	       --tag $image_path .
 
 	#推送镜像
+	info "开始向harbor推送镜像"
 	docker push $image_path
 	dic[tmp_image_path]=$image_path
 }
@@ -294,17 +288,17 @@ function vue_build_image() {
 	tmp_build_dist_path=${dic[tmp_build_dist_path]}
 	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}
 
-
+        info "开始vue项目镜像的构建"
 	# build临时目标路径
 	cd ${tmp_build_dist_path}
 	check_env_by_cmd_v docker
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
-	echo "vue_build_image-->image_path: $image_path"
 	tar -cf dist.tar *
 	docker build -t $image_path .
 
 	#推送镜像
+	info "开始向harbor推送镜像"
 	docker push $image_path
 	dic[tmp_image_path]=$image_path
 }
@@ -319,7 +313,7 @@ function render_template() {
 	cmd_job_name=${dic[cmd_job_name]}
 	tmp_image_path=${dic[tmp_image_path]}
 
-
+        #info "开始渲染模板文件"
 	cd $cfg_template_path
 	gen_long_time_str=`date +%s%N`
 
@@ -364,14 +358,14 @@ function deploy() {
 	if [ "$cfg_build_platform" = "KUBERNETES" ]
 	then
 		check_env_by_cmd_v kubectl
-		echo "build_platform_k8s"
+		info "开始使用k8s部署服务"
 	    	kubectl apply -f  ${cfg_devops_path}/deploy/${cmd_job_name}.yml
 	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
 	then
-	    	echo "build_platform_docker_swarm"
+		info "开始使用docker swarm部署服务"
 	    	docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
 	else
-		echo "build_platform_default"
+		info "开始使用docker swarm部署服务"
 		docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
 	fi
 }
