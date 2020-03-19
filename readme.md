@@ -8,6 +8,8 @@
 jenkins的部署
 ```
 直接在任何一台机器上部署jenkins，安装publish over ssh插件，详细说明，后补0.0
+
+如果通过 publish over ssh 远程执行脚本找不到命令，则需要在/$HOME/.bashrc文件中添加环境变量
 ```
 添加环境变量
 ```

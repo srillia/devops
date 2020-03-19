@@ -28,6 +28,7 @@ function parse_params() {
                                         --build-env) dic[opt_build_env]=$2; shift 2;;
                                         --dockerfile) dic[opt_dockerfile]=$2; shift 2;;
 					--template) dic[opt_template]=$2; shift 2;;
+					--git-branch) dic[opt_git_branch]=$2; shift 2;;
                                         *) echo "unknown parameter or command $1 ." ; exit 1 ; break;;
                                         esac
                                 else
@@ -119,6 +120,7 @@ function node() {
 function scm() {
 	cfg_temp_dir=${dic[cfg_temp_dir]}
 	opt_git_url=${dic[opt_git_url]}
+	opt_git_branch=${dic[opt_git_branch]}
 	opt_svn_url=${dic[opt_svn_url]}
 
 	if [ -n "$opt_git_url" ]; then 
@@ -126,7 +128,11 @@ function scm() {
 
                 echo "into git clone"
 		#克隆代码
-		git clone $opt_git_url  $cfg_temp_dir
+		if -n "${opt_git_branch}" ; then
+			git clone -b --single-branch ${opt_git_branch} $opt_git_url  $cfg_temp_dir
+		else 
+		        git clone --single-branch $opt_git_url  $cfg_temp_dir
+		fi
 		cd $cfg_temp_dir
 		#生成日期和git日志版本后六位
 		date=`date +%Y-%m-%d_%H-%M-%S`
