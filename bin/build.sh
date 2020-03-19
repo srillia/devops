@@ -10,12 +10,12 @@ function parse_params() {
         case "$1" in
 	-v) echo "devops version 1.1.5" ; exit 1;;
         --version) echo "devops version 1.1.5" ; exit 1;;
-        -h)  echo "the help of devops ,to do" ; exit 1;;
+        -h)  devops_help ; exit 1;;
         *) 
                 dic[cmd_1]=$1
                 shift 1
                 case "$1" in
-                -h)  echo "the help of first cmd ,to do" ; exit 1;;
+                -h)  echo "thanks for use devops!" ; exit 1;;
                 *)
                         dic[cmd_2]=$1
                         shift 1
@@ -42,6 +42,30 @@ function parse_params() {
 
                 ;;  esac
         ;; esac
+}
+
+
+function devops_help() {
+	echo -e 'Usage:  devops [OPTIONS] COMMAND
+
+	A cicd tool for devops
+	
+	Options:
+	      --build-tool string    java build tool "maven" or "gradle"
+	      --git-url string       the url of git registry
+	      --git-branch string    the branch of git registry
+	      --svn-url string       the url of svn registry
+	      --java-opts string     the java -jar ${java-opts} foo.jar
+	      --dockerfile string    the use of the dockerfile for this job
+	      --template string      the use of the docker swram or k8s template for this job
+	      --build-cmds string    the cmd rewrite for building this job
+	      --build-env string     build env "dev" "test" "gray" "prod" etc.
+	      --version              the version of devops
+	
+	Commands:
+	  run      now you can "run java" or "run vue"'
+	exit 1;
+	
 }
 
 function run() {
