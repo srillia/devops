@@ -55,7 +55,6 @@ function load_env_by_opt_env_prarm() {
 function run() {
         case ${dic[cmd_1]} in
         run) 
-		echo "${dic[cmd_2]}"
                 if test -n ${dic[cmd_2]}; then
                         ${dic[cmd_2]}
                 else
@@ -67,7 +66,6 @@ function run() {
 }
 
 function check_post_parmas() {
-	echo "cmd_3 : ${dic[cmd_3]}"
  	if [[ -z ${dic[cmd_3]} ]];then
                 echo "job name can not be null ## $1 ##."; exit 1;
 	 fi
@@ -126,7 +124,7 @@ function scm() {
 	if [ -n "$opt_git_url" ]; then 
 		check_env_by_cmd_v git
 
-                echo "into git clone"
+                info "scm 使用 git 拉取代码"
 		#克隆代码
 		if -n "${opt_git_branch}" ; then
 			git clone -b --single-branch ${opt_git_branch} $opt_git_url  $cfg_temp_dir
@@ -141,7 +139,7 @@ function scm() {
 		dic[tmp_docker_image_suffix]="${date}_${last_log}"
 	elif [ -n "$opt_svn_url" ]; then 
 		check_env_by_cmd_v svn
-		echo 'into svn checkout'
+		info 'scm 使用 svn 拉取代码'
 		svn checkout $opt_svn_url $cfg_temp_dir
 		cd $cfg_temp_dir
 		date=`date +%Y-%m-%d_%H-%M-%S`
