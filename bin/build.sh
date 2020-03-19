@@ -118,9 +118,11 @@ function scm() {
 
                 info "scm 使用 git 拉取代码"
 		#克隆代码
-		if -n "${opt_git_branch}" ; then
-			git clone -b --single-branch ${opt_git_branch} $opt_git_url  $cfg_temp_dir
+		if test -n "${opt_git_branch}" ; then
+			info "使用分支 ${opt_git_branch} 拉取代码"
+			git clone -b  ${opt_git_branch}  --single-branch $opt_git_url  $cfg_temp_dir
 		else 
+			 info "使用默认分支 拉取代码"
 		        git clone --single-branch $opt_git_url  $cfg_temp_dir
 		fi
 		cd $cfg_temp_dir
@@ -241,16 +243,19 @@ function java_build_image() {
 	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}
 
 
+	info "开始java项目镜像的构建"
+
 	# 查找jar包名
 	cd ${tmp_build_dist_path}
 	jar_name=`ls | grep -v 'source'| grep ${cmd_job_name}`
 	
 	check_env_by_cmd_v docker
+	echo "opt_java_opts:$opt_java_opts"
 
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
 	docker build --build-arg jar_name=$jar_name\
-	       --build-arg java_opts="opt_java_opts"\
+	       --build-arg java_opts="$opt_java_opts"\
 	       --tag $image_path .
 
 	#推送镜像
