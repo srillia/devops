@@ -1,0 +1,2 @@
+#配置dockerfile构建时的java参数
+BUILD_JAVA_EXTRA_OPTS="--meal-profile=dev --meal-config=meal-config"
