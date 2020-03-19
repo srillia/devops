@@ -40,7 +40,7 @@ load_env_by_opt_env_prarm
 function load_env_by_opt_env_prarm() {
 	if [ -n "${dic[opt_build_env]}" ]; then
         	#读取构建环境变量
-       	 	source ${dic[cfg_workspace_path]}/env/${dic[cfg_build_env]}
+       	 	source ${dic[cfg_workspace_path]}/env/${dic[opt_build_env]}
         	dic[cfg_main_project_name]=${build_env%%-*}
         	dic[cfg_java_extra_opts]=$BUILD_JAVA_EXTRA_OPTS
 	fi

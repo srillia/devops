@@ -1,2 +1,0 @@
-#配置dockerfile构建时的java参数
-BUILD_JAVA_EXTRA_OPTS="--jshyun-profile=dev --jshyun-config=jshyun-config"
