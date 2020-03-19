@@ -8,12 +8,14 @@ function check_env_by_cmd_v() {
 
 function parse_params() {
         case "$1" in
-        -h)  echo "the help of $1 ,to do" ; exit1;;
+	-v) echo "devops version 1.1.5" ; exit 1;;
+        --version) echo "devops version 1.1.5" ; exit 1;;
+        -h)  echo "the help of devops ,to do" ; exit 1;;
         *) 
                 dic[cmd_1]=$1
                 shift 1
                 case "$1" in
-                -h)  echo "the help of $1 ,to do" ; exit1;;
+                -h)  echo "the help of first cmd ,to do" ; exit 1;;
                 *)
                         dic[cmd_2]=$1
                         shift 1
