@@ -25,11 +25,13 @@ function parse_params() {
                                         --build-tool) dic[opt_build_tool]=$2; shift 2;;
                                         --git-url) dic[opt_git_url]=$2;  shift 2;;
                                         --svn-url) dic[opt_svn_url]=$2; shift 2;;
-                                        --build-env) dic[opt_build_env]=$2; shift 2;;
+                                        --java-opts) dic[opt_java_opts]=$2; shift 2;;
                                         --dockerfile) dic[opt_dockerfile]=$2; shift 2;;
 					--template) dic[opt_template]=$2; shift 2;;
 					--git-branch) dic[opt_git_branch]=$2; shift 2;;
-                                        *) echo "unknown parameter or command $1 ." ; exit 1 ; break;;
+					--build-cmds) dic[opt_build_cmds]=$2; shift 2;;
+                                        --vue-env) dic[opt_vue_env]=$2; shift 2;;
+                                        *)         echo $2 echo "unknown parameter or command $1 ." ; exit 1 ; break;;
                                         esac
                                 else
                                         dic[cmd_3]=$1
@@ -40,16 +42,6 @@ function parse_params() {
 
                 ;;  esac
         ;; esac
-	load_env_by_opt_env_prarm
-}
-
-function load_env_by_opt_env_prarm() {
-	if [ -n "${dic[opt_build_env]}" ]; then
-        	#读取构建环境变量
-       	 	source ${dic[cfg_workspace_path]}/env/${dic[opt_build_env]}
-        	dic[cfg_main_project_name]=${build_env%%-*}
-        	dic[cfg_java_extra_opts]=$BUILD_JAVA_EXTRA_OPTS
-	fi
 }
 
 function run() {
@@ -183,13 +175,22 @@ function java_build() {
 function node_build() {
         cfg_temp_dir=${dic[cfg_temp_dir]}
         cmd_job_name=${dic[cmd_job_name]}
-	
+	opt_build_cmds=${dic[opt_build_cmds]}
+	opt_vue_env=${dic[opt_vue_env]}	
+
 	check_env_by_cmd_v npm	
 
         module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
-	#构建代码
-	cd $module_path && npm --unsafe-perm install && npm run build
+	if test -n "$opt_build_cmds" ;then
+		cd $module_path && $opt_build_cmds
+	else
+		if test -n "$opt_vue_env" ;then
+			cd $module_path && npm --unsafe-perm install && vue-cli-service build --mode $opt_vue_env
+		else
+			cd $module_path && npm --unsafe-perm install && vue-cli-service build
+		fi
+	fi
 	dic[tmp_build_dist_path]=$module_path/dist
 }
 
@@ -223,6 +224,7 @@ function cp_dockerfile() {
 
 function java_build_image() {
 	cmd_job_name=${dic[cmd_job_name]}
+        opt_java_opts=${dic[opt_java_opts]}
 	cfg_harbor_address=${dic[cfg_harbor_address]}
 	cfg_harbor_project=${dic[cfg_harbor_project]}
 	tmp_build_dist_path=${dic[tmp_build_dist_path]}
@@ -237,9 +239,8 @@ function java_build_image() {
 
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
-	docker build --build-arg module_name=$cmd_job_name\
-	       --build-arg jar_name=$jar_name\
-	       --build-arg java_opts="$java_extra_opts"\
+	docker build --build-arg jar_name=$jar_name\
+	       --build-arg java_opts="opt_java_opts"\
 	       --tag $image_path .
 
 	#推送镜像
@@ -271,7 +272,6 @@ function node_build_image() {
 
 
 function render_template() {
-	opt_build_env=${dic[opt_build_env]}
 	opt_template=${dic[opt_template]}
 	cfg_devops_path=${dic[cfg_devops_path]}
 	cfg_swarm_network=${dic[cfg_swarm_network]}
@@ -283,10 +283,6 @@ function render_template() {
 
 	cd $cfg_template_path
 	gen_long_time_str=`date +%s%N`
-
-	#取环境变量的前缀，获取主项目名称，主项目相关的deploy文件放在一下文件夹下
-	main_project_name=${opt_build_env%%-*}
-	if test -z $main_project_name ; then main_project_name="orphan" ; fi
 
 	 #处理模板路由信息
 	if test -n "${opt_template}"; then
@@ -314,10 +310,10 @@ function render_template() {
 	sed -i "s#?network#${cfg_swarm_network}#g"  ./${gen_long_time_str}.yml
 
 	#生成文件
-	if [ ! -d "$cfg_devops_path/deploy/$main_project_name" ];then
-	mkdir -p $cfg_devops_path/deploy/$main_project_name
+	if [ ! -d "$cfg_devops_path/deploy" ];then
+	mkdir -p $cfg_devops_path/deploy
 	fi
-	\mv ./${gen_long_time_str}.yml $cfg_devops_path/deploy/$main_project_name/${cmd_job_name}.yml
+	\mv ./${gen_long_time_str}.yml $cfg_devops_path/deploy/${cmd_job_name}.yml
 }
 
 function deploy() {
@@ -330,14 +326,14 @@ function deploy() {
 	then
 		check_env_by_cmd_v kubectl
 		echo "build_platform_k8s"
-	    	kubectl apply -f  ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml
+	    	kubectl apply -f  ${cfg_devops_path}/deploy/${cmd_job_name}.yml
 	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
 	then
 	    	echo "build_platform_docker_swarm"
-	    	docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
+	    	docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
 	else
 		echo "build_platform_default"
-		docker stack deploy -c ${cfg_devops_path}/deploy/${main_project_name}/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
+		docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
 	fi
 }
 

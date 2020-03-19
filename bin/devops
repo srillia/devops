@@ -41,7 +41,7 @@ dic[opt_build_tool]=gradle
 
 
 
-parse_params $@
+parse_params "$@"
 
 
 
