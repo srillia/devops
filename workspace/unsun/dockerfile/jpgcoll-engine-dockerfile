@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM harbor.jsy.com/library/unsun-libreoffice:6
 MAINTAINER srilli@163.com
 LABEL maintainer='corp'
 
@@ -14,4 +14,4 @@ COPY ./$JAR_NAME /opt/$JAR_NAME
 
 WORKDIR /opt
 
-CMD java -jar ${JAVA_OPTS} ${JAR_NAME} 
+ENTRYPOINT java -jar ${JAVA_OPTS}  ${JAR_NAME}
