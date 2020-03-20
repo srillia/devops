@@ -32,5 +32,5 @@ spec:
   ports:
     - protocol: HTTP
       targetPort: 80
-          nodePort: 29999
+          nodePort: 9999
   type: NodePort
