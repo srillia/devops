@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ?module_name-deployment
+  name: ?module_name
   labels:
     app: ?module_name
 spec:
