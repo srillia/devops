@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM harbor.jsy.com/library/unsun-libreoffice:6
 MAINTAINER srilli@163.com
 LABEL maintainer='corp'
 
@@ -7,11 +7,12 @@ ARG java_opts
 ENV JAR_NAME=$jar_name
 ENV JAVA_OPTS=$java_opts
 
-RUN echo 'jar_name is '$jar_name
+RUN echo "JAR_NAME is $JAR_NAME"
+RUN echo "JAVA_OPTS is $JAVA_OPTS"
 ENV TZ=Asia/Shanghai
 
 COPY ./$JAR_NAME /opt/$JAR_NAME
 
 WORKDIR /opt
 
-CMD java -jar ${JAVA_OPTS} ${JAR_NAME} 
+ENTRYPOINT java -jar ${JAVA_OPTS}  ${JAR_NAME}

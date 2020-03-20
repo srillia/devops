@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ?module_name
+  name: ?module_name-deployment
   labels:
     app: ?module_name
 spec:
@@ -25,12 +25,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ?module_name
+  name: ?module_name-service
 spec:
   selector:
     app: ?module_name
   ports:
-    - protocol: TCP
-      port: 80
+    - protocol: HTTP
       targetPort: 80
-  type: ClusterIP
+          nodePort: 9999
+  type: NodePort
+

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ?module_name-deployment
+  name: ?module_name
   labels:
     app: ?module_name
 spec:
@@ -25,12 +25,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ?module_name-service
+  name: ?module_name
 spec:
   selector:
     app: ?module_name
   ports:
-    - protocol: HTTP
-      targetPort: 80
-          nodePort: 19999
+    - protocol: TCP
+      port: 80
+      nodePort: 19999
   type: NodePort
