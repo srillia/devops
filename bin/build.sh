@@ -2,8 +2,7 @@
 source ${dic[cfg_devops_bin_path]}/log.sh
 
 function check_env_by_cmd_v() {
-        command -v $1 >/dev/null 2>&1 || { error "Need to install ##$1## command first and run this script again.";
- }
+	command -v $1 > /dev/null 2>&1 || (error "Need to install ##$1## command first and run this script again." && exit 1)
 }
 
 function parse_params() {
