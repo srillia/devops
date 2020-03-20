@@ -14,4 +14,4 @@ COPY ./$JAR_NAME /opt/$JAR_NAME
 
 WORKDIR /opt
 
-CMD java -jar -Xmx512m -Xms512m -XX:+UseParallelGC ${JAR_NAME} ${JAVA_OPTS}
+CMD java -jar ${JAVA_OPTS} ${JAR_NAME} 
