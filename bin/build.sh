@@ -154,7 +154,8 @@ function scm() {
 	elif [ -n "$opt_svn_url" ]; then 
 		check_env_by_cmd_v svn
 		info '开始使用 svn 拉取代码'
-		svn checkout $opt_svn_url $cfg_temp_dir
+		debug '此处忽略svn拉取日志'
+		svn checkout -q $opt_svn_url $cfg_temp_dir
 		cd $cfg_temp_dir
 		date=`date +%Y-%m-%d_%H-%M-%S`
 		tmp_log=`svn log | head -2 | tail -1`
