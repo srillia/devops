@@ -227,26 +227,37 @@ function vue_build() {
 }
 
 function cp_dockerfile() {
+	cmd_job_name=${dic[cmd_job_name]}
 	opt_dockerfile=${dic[opt_dockerfile]}
 	cfg_dockerfile_path=${dic[cfg_dockerfile_path]}
 	cfg_enable_dockerfiles=${dic[cfg_enable_dockerfiles]}
 	tmp_build_dist_path=${dic[tmp_build_dist_path]}
+
+        if test ! -d ${tmp_build_dist_path} ; then
+		error "please check scm url or job name(the last command),job name must be the module name";
+                exit 1;
+	fi		
 	#info "开始复制dockerfile到构建目录"
 	if test -n "${opt_dockerfile}"
 	then
+		echo '执行命令行指定dockerfile'
    		cp $cfg_dockerfile_path/${opt_dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 	else
 		dockerfiles=(${cfg_enable_dockerfiles//,/ })
+		echo "config.conf指定dockerfiles:${dockerfiles}"
 		is_has_enable_docker_file=false
 		for dockerfile in ${dockerfiles[@]} ;do
-			if [[ $module_name == $dockerfile ]]
+			echo "cmd_job_name:$cmd_job_name,dockerfile:$dockerfile"
+			if [[ $cmd_job_name == $dockerfile ]]
 			then
-			   cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
-			   is_has_enable_docker_file=true
+			  echo '执行config.conf指定dockerfile'
+			  cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
+			  is_has_enable_docker_file=true
 			fi
 		done
 		if [ "$is_has_enable_docker_file" = false ]; then
-		   cp $cfg_dockerfile_path/dockerfile ${tmp_build_dist_path}/
+			echo '执行默认指定dockerfile'
+		   	cp $cfg_dockerfile_path/dockerfile ${tmp_build_dist_path}/ 
 		fi
 	fi
 }

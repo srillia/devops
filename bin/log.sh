@@ -7,15 +7,18 @@ set -o noglob
 # Set Colors
 #
 
-bold=$(tput bold)
-underline=$(tput sgr 0 1)
-reset=$(tput sgr0)
-
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-white=$(tput setaf 7)
-tan=$(tput setaf 3)
-blue=$(tput setaf 25)
+bold=; underline=; reset=; red=; green=; white=; tan=; blue=;
+#echo "the value of TERM is ${TERM}"
+if test ! dumb = "${TERM}" ; then
+	bold=$(tput bold)
+	underline=$(tput sgr 0 1)
+	reset=$(tput sgr0)
+	red=$(tput setaf 1)
+	green=$(tput setaf 76)
+	white=$(tput setaf 7)
+	tan=$(tput setaf 3)
+	blue=$(tput setaf 25)
+fi
 
 #
 # Headers and Logging
