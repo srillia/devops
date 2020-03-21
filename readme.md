@@ -18,6 +18,7 @@ DEVOPS_HOME=/项目所在路径/devops/
 PATH=$PATH:$DEVOPS_HOME/bin
 
 同时需要添加环境变量到 /root/.bashrc文件中
+
 包括 devops java git svn maven gradle npm docker 等等命令到.bashrc中，不然jenkins远程执行找不到命令
 
 ```
