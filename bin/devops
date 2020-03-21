@@ -15,11 +15,11 @@ dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
 
 #激活配置
 workspace_dir_name="workspace"
-source ${dic[cfg_devops_path]}/${workspace_dir_name}/enable.conf
+source ${dic[cfg_devops_path]}/${workspace_dir_name}/enable
 dic[cfg_enable_path]=$ENABEL_WORKSPACE_PATH
 dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${workspace_dir_name}/${dic[cfg_enable_path]}
 #加载配置
-source ${dic[cfg_workspace_path]}/config.conf
+source ${dic[cfg_workspace_path]}/config
 #读取配置变量
 dic[cfg_harbor_address]=$BUILD_HARBOR_ADDRESS
 dic[cfg_harbor_project]=$BUILD_HARBOR_PROJECT
