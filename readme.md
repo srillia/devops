@@ -45,15 +45,17 @@ devops目录下workspace 中的enabel.conf文件，配置你的工作目录，�
 ```
 devops run java --git-url http://192.168.10.44/sample/sample.git --java-opts "--profile=dev" sample
 
-devops run node --git-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
-
-devops run node --svn-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
-
 devops run java --git-url https://github.com/springframeworkguru/helloworld.git --build-tool maven hello-world
+
+devops run vue --git-url http://192.168.10.44/sample/sample.git  --dockerfile node --template node  sample
 
 devops run vue --svn-url https://192.168.10.253/svn/sample  --dockerfile node --template node --build-env "dev" sample
 
 devops run vue --svn-url https://192.168.10.253/svn/sample  --dockerfile node --template node --build-cmds "npm run build:test" sample
+
+注意: 最后一个参数，应该为你需要构建项目的那个直接的项目名.
+      如果是单级项目，为主项目名，如果为多级项目，为那个直接的子项目名.
+      比如java 项目, maven pom中指定的那(如果是多级项目的话)个子项目名
 
 ```
 
