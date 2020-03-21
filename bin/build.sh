@@ -240,23 +240,21 @@ function cp_dockerfile() {
 	#info "开始复制dockerfile到构建目录"
 	if test -n "${opt_dockerfile}"
 	then
-		echo '执行命令行指定dockerfile'
+		echo "埋点:执行命令行指定dockerfile${opt_dockerfile}"
    		cp $cfg_dockerfile_path/${opt_dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 	else
 		dockerfiles=(${cfg_enable_dockerfiles//,/ })
-		echo "config.conf指定dockerfiles:${dockerfiles}"
+		echo "埋点:执行在config.conf配置的dockerfiles:${dockerfiles}"
 		is_has_enable_docker_file=false
 		for dockerfile in ${dockerfiles[@]} ;do
-			echo "cmd_job_name:$cmd_job_name,dockerfile:$dockerfile"
 			if [[ $cmd_job_name == $dockerfile ]]
 			then
-			  echo '执行config.conf指定dockerfile'
 			  cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 			  is_has_enable_docker_file=true
 			fi
 		done
 		if [ "$is_has_enable_docker_file" = false ]; then
-			echo '执行默认指定dockerfile'
+			echo "埋点:执行默认指定dockerfile"
 		   	cp $cfg_dockerfile_path/dockerfile ${tmp_build_dist_path}/ 
 		fi
 	fi
