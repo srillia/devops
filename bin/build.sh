@@ -244,11 +244,11 @@ function cp_dockerfile() {
    		cp $cfg_dockerfile_path/${opt_dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 	else
 		dockerfiles=(${cfg_enable_dockerfiles//,/ })
-		echo "埋点:执行在config.conf配置的dockerfiles:${dockerfiles}"
 		is_has_enable_docker_file=false
 		for dockerfile in ${dockerfiles[@]} ;do
 			if [[ $cmd_job_name == $dockerfile ]]
 			then
+			  echo "埋点:执行在config.conf配置的dockerfile:${dockerfile}"
 			  cp $cfg_dockerfile_path/${dockerfile}-dockerfile ${tmp_build_dist_path}/dockerfile
 			  is_has_enable_docker_file=true
 			fi
