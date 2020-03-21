@@ -77,12 +77,12 @@ log.sh 日志脚本
 ### deploy 部署模板生成的地方
 ### workspace 工作空间
 ```
-enable.conf 是当前启动的工作目录
+enable 是当前启动的工作目录
 
 meal 示例工作目录,同级的都是示例工作目录 
 ```
 #### 示例工作目录 meal
-+ config.conf 当前工作空间的主配置文件
++ config 当前工作空间的主配置文件
 + dockerfile 存放每一个服务的dockerfile
 + template 存放，不同构建平台的模板文件，支持docker-swarm,k8s等平台
 ### readme.md
