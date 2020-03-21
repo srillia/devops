@@ -13,11 +13,15 @@ jenkins的部署
 ```
 添加环境变量
 ```
+vim /etc/profile 添加环境变量
+
 DEVOPS_HOME=/项目所在路径/devops/
 
 PATH=$PATH:$DEVOPS_HOME/bin
 
 同时需要添加环境变量到 /root/.bashrc文件中
+
+vim /root/.bashrc
 
 包括 devops java git svn maven gradle npm docker 等等命令到.bashrc中，不然jenkins远程执行找不到命令
 
