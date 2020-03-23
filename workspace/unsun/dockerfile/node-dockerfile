@@ -1,0 +1,7 @@
+FROM nginx:latest
+MAINTAINER srilli@163.com
+LABEL maintainer='corp'
+
+ENV TZ=Asia/Shanghai
+
+ADD ./dist.tar /usr/share/nginx/html/
