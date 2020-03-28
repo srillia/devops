@@ -2,7 +2,7 @@
 # 执行下面两行命令
 #   if test ! -d $HOME/.devops ; then mkdir $HOME/.devops ; fi
 #   cp ./deploy-target.sample $HOME/.devops/deploy-target
-#key是工作空间名称，一个工作空间对应一个ip,不同的工作空间可以对应多个ip
+#key是工作空间名称，一个工作空间对应一个ip,不同的工作空间可以对应同一个ip 
 #value 分三部分，first 是主机的用户名，second 是主机的ip,third 是主机的密码
 
 meal=root:192.168.10.111:xxxx
