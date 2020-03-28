@@ -39,8 +39,8 @@ else
 fi
 
 #设置deploy文件生成位置
-dic[cfg_deploy_gen_location]=${dic[cfg_devops_path]}/devops/${dic[opt_workspace]}
-
+info "埋点: 当前的工作空间为:${opt_workspace}"
+dic[cfg_deploy_gen_location]=${dic[cfg_devops_path]}/deploy/${dic[opt_workspace]}
 #加载配置
 source ${dic[cfg_workspace_path]}/config
 #读取配置变量

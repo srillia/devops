@@ -355,7 +355,6 @@ function render_template() {
 	sed -i "s#?module_name#${cmd_job_name}#g"  ./${gen_long_time_str}.yml
 	sed -i "s#?image_path#${tmp_image_path}#g"  ./${gen_long_time_str}.yml
 	sed -i "s#?network#${cfg_swarm_network}#g"  ./${gen_long_time_str}.yml
-
 	#生成文件
 	if [ ! -d "$cfg_deploy_gen_location" ];then
 	mkdir -p $cfg_deploy_gen_location
