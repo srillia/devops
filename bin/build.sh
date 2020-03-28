@@ -323,6 +323,7 @@ function render_template() {
 	cfg_swarm_network=${dic[cfg_swarm_network]}
 	cfg_template_path=${dic[cfg_template_path]}
 	cfg_enable_templates=${dic[cfg_enable_templates]}
+	cfg_deploy_gen_location=${dic[cfg_deploy_gen_location]}
 	cmd_job_name=${dic[cmd_job_name]}
 	tmp_image_path=${dic[tmp_image_path]}
 
@@ -356,10 +357,10 @@ function render_template() {
 	sed -i "s#?network#${cfg_swarm_network}#g"  ./${gen_long_time_str}.yml
 
 	#生成文件
-	if [ ! -d "$cfg_devops_path/deploy" ];then
-	mkdir -p $cfg_devops_path/deploy
+	if [ ! -d "$cfg_deploy_gen_location" ];then
+	mkdir -p $cfg_deploy_gen_location
 	fi
-	\mv ./${gen_long_time_str}.yml $cfg_devops_path/deploy/${cmd_job_name}.yml
+	\mv ./${gen_long_time_str}.yml $cfg_deploy_gen_location/${cmd_job_name}.yml
 }
 
 function deploy() {
@@ -378,9 +379,10 @@ function local_deploy() {
   	cfg_devops_path=${dic[cfg_devops_path]}
         cfg_build_platform=${dic[cfg_build_platform]}
         cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
+	cfg_deploy_gen_location=${dic[cfg_deploy_gen_location]}
         cmd_job_name=${dic[cmd_job_name]}
 
-	deploy_job_yml=${cfg_devops_path}/deploy/${cmd_job_name}.yml
+	deploy_job_yml=$cfg_deploy_gen_location/${cmd_job_name}.yml
         #创建或者更新镜像
         if [ "$cfg_build_platform" = "KUBERNETES" ]
         then
@@ -403,9 +405,10 @@ function remote_deploy() {
         cfg_build_platform=${dic[cfg_build_platform]}
         cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
 	cfg_deploy_target=${dic[cfg_deploy_target]}
+	cfg_deploy_gen_location=${dic[cfg_deploy_gen_location]}
         cmd_job_name=${dic[cmd_job_name]}
 
-	deploy_job_yml=${cfg_devops_path}/deploy/${cmd_job_name}.yml
+	deploy_job_yml=$cfg_deploy_gen_location/${cmd_job_name}.yml
 
         array=(${cfg_deploy_target//:/ })
         user=${array[0]}

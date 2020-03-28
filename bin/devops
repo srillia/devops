@@ -28,6 +28,7 @@ source ${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/enable
 #如果命令行没有指定 --workspace 工作空间，那么使用enable文件配置的默认工作空间
 if test -z ${dic[opt_workspace]}; then
 	dic[cfg_enable_path]=$ENABEL_WORKSPACE_PATH
+	dic[opt_workspace]=${dic[cfg_enable_path]}
 	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[cfg_enable_path]}
 else 
 	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[opt_workspace]}
@@ -36,6 +37,9 @@ else
                 dic[cfg_deploy_target]=`eval echo '$'"${dic[opt_workspace]}"`
         fi
 fi
+
+#设置deploy文件生成位置
+dic[cfg_deploy_gen_location]=${dic[cfg_devops_path]}/devops/${dic[opt_workspace]}
 
 #加载配置
 source ${dic[cfg_workspace_path]}/config

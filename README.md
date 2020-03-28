@@ -1,6 +1,24 @@
 # srillia/devops
 ### 作者：张正涵
 
+## 最新动态
+devops 1.6发布
+1.6 增加新功能:
+```
+本地一套环境，支持任意远程集群发布
+
+(解决，devops必须在集群主机上进行构建的局限，现在可以用一个主机作构建，完全和远程集群服务器解耦和)
+
+需要配置 deploy-target文件到 $HOME/.deploy/ 下，在workspace目录里面有样本文件
+
+deploy-target 不配置不启用远程部署，使用本地构建
+
+配置key需要和 --workspace 参数，和工作目录一致 例:
+
+	--workspace meal ,工作目录 meal, deploy-target 文件中存在 key 为meal 的主机配置
+```
+devops 1.5.1已经发布release
+
 ## 简介
 基于jenkins publish over ssh 插件，执行的devops cicd远程脚本
 
