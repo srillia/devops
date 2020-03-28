@@ -1,1 +1,2 @@
+#命令行传入 --workspace foo 此参数将失效
 ENABEL_WORKSPACE_PATH="meal"

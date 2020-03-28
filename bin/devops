@@ -3,6 +3,10 @@
 #必须先声明
 declare -A dic
 
+if test ! -d $HOME/.devops ; then mkdir $HOME/.devops ; fi
+
+#保存不同远程主机信息的私密文件
+dic[cfg_devops_secret]=$HOME/.devops/deploy-target
 #获取当前shell文件所在路径
 dic[cfg_devops_bin_path]=$(dirname $(readlink -f "$0"))
 
@@ -13,11 +17,26 @@ source ${dic[cfg_devops_bin_path]}/log.sh
 #devops项目所在路径
 dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
 
+#解析命令行参数
+parse_params "$@"
+
+
 #激活配置
-workspace_dir_name="workspace"
-source ${dic[cfg_devops_path]}/${workspace_dir_name}/enable
-dic[cfg_enable_path]=$ENABEL_WORKSPACE_PATH
-dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${workspace_dir_name}/${dic[cfg_enable_path]}
+dic[cfg_workspace_dir_name]="workspace"
+source ${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/enable
+
+#如果命令行没有指定 --workspace 工作空间，那么使用enable文件配置的默认工作空间
+if test -z ${dic[opt_workspace]}; then
+	dic[cfg_enable_path]=$ENABEL_WORKSPACE_PATH
+	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[cfg_enable_path]}
+else 
+	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[opt_workspace]}
+        if test -f ${dic[cfg_devops_secret]} ; then
+                source ${dic[cfg_devops_secret]}
+                dic[cfg_deploy_target]=`eval echo '$'"${dic[opt_workspace]}"`
+        fi
+fi
+
 #加载配置
 source ${dic[cfg_workspace_path]}/config
 #读取配置变量
@@ -38,10 +57,6 @@ dic[cfg_template_path]=${dic[cfg_workspace_path]}/template
 
 #java命令，选项默认值
 dic[opt_build_tool]=gradle
-
-
-
-parse_params "$@"
 
 
 

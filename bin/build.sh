@@ -7,7 +7,7 @@ function check_env_by_cmd_v() {
 
 function parse_params() {
         case "$1" in
-	-v) echo "devops version 1.1.5" ; exit 1;;
+	-v) echo "devops version 1.6" ; exit 1;;
         --version) echo "devops version 1.1.5" ; exit 1;;
         -h)  devops_help ; exit 1;;
         *) 
@@ -30,6 +30,7 @@ function parse_params() {
 					--git-branch) dic[opt_git_branch]=$2; shift 2;;
 					--build-cmds) dic[opt_build_cmds]=$2; shift 2;;
                                         --build-env) dic[opt_build_env]=$2; shift 2;;
+					--workspace) dic[opt_workspace]=$2; shift 2;;
                                         *) error "unknown parameter or command $1 ." ; exit 1 ; break;;
                                         esac
                                 else
@@ -362,24 +363,89 @@ function render_template() {
 }
 
 function deploy() {
-        cfg_devops_path=${dic[cfg_devops_path]}
-	cfg_build_platform=${dic[cfg_build_platform]}
-	cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
-	cmd_job_name=${dic[cmd_job_name]}
-	#创建或者更新镜像
-	if [ "$cfg_build_platform" = "KUBERNETES" ]
-	then
-		check_env_by_cmd_v kubectl
-		info "开始使用k8s部署服务"
-	    	kubectl apply -f  ${cfg_devops_path}/deploy/${cmd_job_name}.yml
-	elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
-	then
-		info "开始使用docker swarm部署服务"
-	    	docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name}  --with-registry-auth
+        cfg_deploy_target=${dic[cfg_deploy_target]}
+	if test -z "$cfg_deploy_target"  ; then
+		info "执行本地部署"
+		local_deploy
 	else
-		info "开始使用docker swarm部署服务"
-		docker stack deploy -c ${cfg_devops_path}/deploy/${cmd_job_name}.yml ${cfg_swarm_stack_name} --with-registry-auth
+		echo "执行远程部署"
+		remote_deploy
 	fi
+
+}
+
+function local_deploy() {
+  	cfg_devops_path=${dic[cfg_devops_path]}
+        cfg_build_platform=${dic[cfg_build_platform]}
+        cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
+        cmd_job_name=${dic[cmd_job_name]}
+
+	deploy_job_yml=${cfg_devops_path}/deploy/${cmd_job_name}.yml
+        #创建或者更新镜像
+        if [ "$cfg_build_platform" = "KUBERNETES" ]
+        then
+                check_env_by_cmd_v kubectl
+                info "开始使用k8s部署服务"
+                kubectl apply -f  ${deploy_job_yml}
+        elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
+        then
+                info "开始使用docker swarm部署服务"
+                docker stack deploy -c ${deploy_job_yml} ${cfg_swarm_stack_name}  --with-registry-auth
+        else
+                info "开始使用docker swarm部署服务"
+                docker stack deploy -c ${deploy_job_yml} ${cfg_swarm_stack_name} --with-registry-auth
+        fi
+}
+
+function remote_deploy() {
+
+	cfg_devops_path=${dic[cfg_devops_path]}
+        cfg_build_platform=${dic[cfg_build_platform]}
+        cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
+	cfg_deploy_target=${dic[cfg_deploy_target]}
+        cmd_job_name=${dic[cmd_job_name]}
+
+	deploy_job_yml=${cfg_devops_path}/deploy/${cmd_job_name}.yml
+
+        array=(${cfg_deploy_target//:/ })
+        user=${array[0]}
+        ip=${array[1]}
+        password=${array[2]}
+
+        if test -z "$user" -o -z "$ip" -o -z "$password" ; then
+                error '执行远程构建，deploy_target的配置不正确'
+                exit 1
+        fi
+
+
+        #创建或者更新镜像
+        if [ "$cfg_build_platform" = "KUBERNETES" ]
+        then
+                info "开始使用k8s部署服务"
+		remote_command="cat $deploy_job_yml | ssh $user@$ip 'kubectl apply -f -'"
+        elif [ "$cfg_build_platform" = "DOCKER_SWARM" ]
+        then
+                info "开始使用docker swarm部署服务"
+		remote_command="cat $deploy_job_yml | ssh $user@$ip 'docker stack deploy -c - ${cfg_swarm_stack_name} --with-registry-auth'"
+        else
+                info "开始使用docker swarm部署服务"
+		remote_command="cat $deploy_job_yml | ssh $user@$ip 'docker stack deploy -c - ${cfg_swarm_stack_name} --with-registry-auth'"
+        fi
+	
+	remote_common_command="echo 'start prune remote images:';docker image prune -af --filter='label=maintainer=corp'"
+
+	remote_command="$remote_command;$remote_common_command"
+
+	expect << EOF
+
+	spawn bash -c "$remote_command"
+	expect {
+	"yes/no" {send "yes\r"; exp_continue}
+	"password" {send "$password\r"}
+	}
+	expect eof
+
+EOF
 }
 
 function prune() {
@@ -391,5 +457,6 @@ function prune() {
 	rm -rf $cfg_temp_dir
 
 	#!清除没有运行的无用镜像
-	docker image prune -af --filter="label=maintainer=corp"
+	echo 'start prune local images:'
+	docker image prune -af --filter="label=maintainer=corp" --filter="until=24h"
 }
