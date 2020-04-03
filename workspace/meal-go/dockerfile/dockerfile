@@ -1,0 +1,18 @@
+FROM openjdk:11
+MAINTAINER srilli@163.com
+LABEL maintainer='corp'
+
+ARG jar_name
+ARG java_opts
+ENV JAR_NAME=$jar_name
+ENV JAVA_OPTS=$java_opts
+
+RUN echo "JAR_NAME is $JAR_NAME"
+RUN echo "JAVA_OPTS is $JAVA_OPTS"
+ENV TZ=Asia/Shanghai
+
+COPY ./$JAR_NAME /opt/$JAR_NAME
+
+WORKDIR /opt
+
+CMD java -jar ${JAVA_OPTS}  ${JAR_NAME} 
