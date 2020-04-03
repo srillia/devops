@@ -65,7 +65,7 @@ dic[opt_build_tool]=gradle
 
 
 case ${dic[cmd_1]} in
-        run) run $dic; ;;
+        run) run; ;;
         *) echo "cannot find the cammand ${dic[cmd_1]}"; exit1 ; ;;
 esac
 

@@ -72,7 +72,7 @@ function run() {
         case ${dic[cmd_1]} in
         run) 
                 if test -n ${dic[cmd_2]}; then
-                        ${dic[cmd_2]}
+                        run_${dic[cmd_2]}
                 else
                         echo "run need be followed by a cammand"; exit 1
                 fi
@@ -91,23 +91,22 @@ function check_post_parmas() {
 }
 
 
-function java() {
-   run_devops java_build
-
+function run_java() {
+        run_devops java_build
 }
 
 
-function go() {
+function run_go() {
 	run_devops go_build
 }
 
 
-function vue() {
+function run_vue() {
 	run_devops vue_build
 }
 
 function run_devops() {
-    #检测前置参数
+        #检测前置参数
 	check_post_parmas
 	#从版本管理工具加载代码
 	scm 
@@ -174,43 +173,44 @@ function go_build() {
 	tmp_dockerfile=${dic[tmp_dockerfile]}
 	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}	
 
-	dic[tmp_go_workspace]=$cfg_temp_dir/tmp-go-workspace
+	dic[tmp_go_workspace]=/tmp/devops-go
 	dic[tmp_go_workspace_src]=${dic[tmp_go_workspace]}/src
+	dic[tmp_go_workspace_src_ws]=${dic[tmp_go_workspace_src]}/${dic[opt_workspace]}
+	#生成gopath和src
+	if test ! -d "${dic[tmp_go_workspace_src_ws]}" ;then
+		mkdir -p ${dic[tmp_go_workspace_src_ws]}
+	fi
+	export GOAPTH=${dic[tmp_go_workspace]}
+	
+	rm -rf ${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
 
-	#生成gopath
-	if test ! -d "${dic[tmp_go_workspace_src]}" {
-		mkdir -p ${dic[tmp_go_workspace_src]}
-	}
-	export GOAPTH=${dic[tmp_go_workspace]]}
-
-
-	mv $cfg_temp_dir ${dic[tmp_go_workspace_src]}/${dic[opt_workspace]}/
-	dic[cfg_temp_dir]=${dic[tmp_go_workspace_src]}/${dic[opt_workspace]}/${cmd_job_name}
+	\mv $cfg_temp_dir ${dic[tmp_go_workspace_src_ws]}
+	dic[cfg_temp_dir]=${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
 
 
 	module_path=`find ${dic[cfg_temp_dir]}/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=${dic[cfg_temp_dir]}; fi
 
 
-    #go语言构建不会把静态文件构建进二进制文件，dockerfile build的时，需要自定义dockerfile将，静态文件copy到容器中
+        #go语言构建不会把静态文件构建进二进制文件，dockerfile build的时，需要自定义dockerfile将，静态文件copy到容器中
 	check_env_by_cmd_v go
-	info "开始使用gradle构建项目"
+	info "开始使用go构建项目"
 	#构建代码
 	if test -n "$opt_build_cmds" ;then
 		cd $module_path && $opt_build_cmds
     	else
 		cd $module_path && go build -o ./
-    fi
+    	fi
 	dic[tmp_build_dist_path]=$module_path
 
 
-    info "开始vue项目镜像的构建"
+    	info "开始go项目镜像的构建"
 
 	check_env_by_cmd_v docker
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
 	tar -cf dist.tar *
-	docker build -t $image_path -f  $tmp_dockerfile . ${dic[tmp_build_dist_path]}
+	docker build -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
 
 	#推送镜像
 	info "开始向harbor推送镜像"
@@ -312,7 +312,7 @@ function vue_build() {
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
 	tar -cf dist.tar *
-	docker build -t $image_path -f  $tmp_dockerfile . ${dic[tmp_build_dist_path]}
+	docker build -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
 
 	#推送镜像
 	info "开始向harbor推送镜像"
@@ -354,30 +354,6 @@ function choose_dockerfile() {
 	fi
 }
 
-function go_build_image() {
-	cmd_job_name=${dic[cmd_job_name]}
-        opt_java_opts=${dic[opt_java_opts]}
-	cfg_harbor_address=${dic[cfg_harbor_address]}
-	cfg_harbor_project=${dic[cfg_harbor_project]}
-	tmp_build_dist_path=${dic[tmp_build_dist_path]}
-	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}
-
-
-	info "开始go项目镜像的构建"
-	
-	check_env_by_cmd_v docker
-
-	#go语言的整个构建基于dockerfile
-
-	# 构建镜像
-	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
-	docker build --tag $image_path .
-
-	#推送镜像
-	info "开始向harbor推送镜像"
-	docker push $image_path
-	dic[tmp_image_path]=$image_path
-}
 
 
 function render_template() {
