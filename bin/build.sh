@@ -265,6 +265,7 @@ function java_build() {
 	info "开始java项目镜像的构建"
 
 	# 查找jar包名
+	cd ${dic[tmp_build_dist_path]}
 	jar_name=`ls | grep -v 'source'| grep ${cmd_job_name}`
 	
 	check_env_by_cmd_v docker
