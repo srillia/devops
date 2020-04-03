@@ -308,12 +308,12 @@ function vue_build() {
 
 	dic[tmp_build_dist_path]=$module_path/dist
 
-    info "开始vue项目镜像的构建"
-
+        info "开始vue项目镜像的构建"
+	cd ${dic[tmp_build_dist_path]}
+	tar -cf dist.tar *
 	check_env_by_cmd_v docker
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
-	tar -cf dist.tar *
 	docker build -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
 
 	#推送镜像

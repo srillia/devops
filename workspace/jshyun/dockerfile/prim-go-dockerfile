@@ -3,7 +3,7 @@ MAINTAINER "srillia@163.com"
 LABEL maintainer='corp'
 
 ENV TZ=Asia/Shanghai
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 ADD ./config /opt/config/
 ADD ./views /opt/views/
