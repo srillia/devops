@@ -210,7 +210,8 @@ function go_build() {
 	# 构建镜像
 	image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
 	tar -cf dist.tar *
-	docker build -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
+	docker build  --build-arg DEVOPS_RUN_ENV=${dic[opt_build_env]} \
+		 -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
 
 	#推送镜像
 	info "开始向harbor推送镜像"
