@@ -2,6 +2,9 @@ FROM ubuntu
 MAINTAINER "srillia@163.com"
 LABEL maintainer='corp'
 
+ARG DEVOPS_RUN_ENV
+
+ENV RUN_ENV=$DEVOPS_RUN_ENV
 ENV TZ=Asia/Shanghai
 ENV LANG en_US.UTF-8
 
