@@ -63,7 +63,7 @@ dic[cfg_template_path]=${dic[cfg_workspace_path]}/template
 dic[opt_build_tool]=gradle
 
 
-
+#执行first命令
 case ${dic[cmd_1]} in
         run) run; ;;
         *) echo "cannot find the cammand ${dic[cmd_1]}"; exit1 ; ;;
