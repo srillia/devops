@@ -13,4 +13,4 @@ BUILD_HARBOR_PROJECT="unsun-test"
 #启用dockerfile,路由dockerfile
 BUILD_ENABEL_DOCKERFILES="jpgcoll-engine"
 #启用模板
-BUILD_ENABEL_TEMPLATES="console-zuul,jshyun-zuul,task-scheduler"
+BUILD_ENABEL_TEMPLATES="console-zuul,jshyun-zuul,task-scheduler,mall-zuul,middleware-zuul"

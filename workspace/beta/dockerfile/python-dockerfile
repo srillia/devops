@@ -1,0 +1,17 @@
+FROM python
+
+ENV TZ=Asia/Shanghai
+ENV LANG=en_US.UTF-8i
+
+RUN pip3 install scrapy 
+RUN pip3 install PyMySQL
+RUN pip3 install scrapy-splash
+RUN pip3 install pymongo
+
+copy ./ /opt/crawler/
+#copy ./crawler /opt/
+
+WORKDIR /opt/crawler/cmd
+
+CMD python scrapy_cmd.py
+#CMD ["sh","-c","while true ; do sleep 3600 ; done"]

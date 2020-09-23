@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ?module_name
+  labels:
+    app: ?module_name
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ?module_name
+  template:
+    metadata:
+      labels:
+        app: ?module_name
+    spec:
+      imagePullSecrets:
+      - name: harbor-secret
+      containers:
+      - name: ?module_name
+        image: ?image_path
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ?module_name
+spec:
+  selector:
+    app: ?module_name
+  ports:
+    - protocol: TCP
+      nodePort: 8094
+      port: 80
+  type: NodePort

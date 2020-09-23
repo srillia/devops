@@ -16,4 +16,4 @@ BUILD_HARBOR_PROJECT="unsun"
 BUILD_ENABEL_DOCKERFILES="jpgcoll-engine"
 
 #启用模板
-BUILD_ENABEL_TEMPLATES="console-zuul,jshyun-zuul,mall-zuul,task-scheduler,entrance-management,prim-go-template"
+BUILD_ENABEL_TEMPLATES="console-zuul,jshyun-zuul,mall-zuul,task-scheduler,middleware-zuul,entrance-management"

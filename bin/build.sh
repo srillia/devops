@@ -105,6 +105,10 @@ function run_vue() {
 	run_devops vue_build
 }
 
+function run_python() {
+        run_devops python_build
+}
+
 function run_devops() {
         #检测前置参数
 	check_post_parmas
@@ -283,8 +287,8 @@ function java_build() {
 }
 
 function vue_build() {
-    cfg_temp_dir=${dic[cfg_temp_dir]}
-    cmd_job_name=${dic[cmd_job_name]}
+        cfg_temp_dir=${dic[cfg_temp_dir]}
+        cmd_job_name=${dic[cmd_job_name]}
 	opt_build_cmds=${dic[opt_build_cmds]}
 	opt_build_env=${dic[opt_build_env]}	
 	cfg_harbor_address=${dic[cfg_harbor_address]}
@@ -320,6 +324,30 @@ function vue_build() {
 	info "开始向harbor推送镜像"
 	docker push $image_path
 	dic[tmp_image_path]=$image_path
+}
+
+function python_build() {
+	cfg_temp_dir=${dic[cfg_temp_dir]}
+        cmd_job_name=${dic[cmd_job_name]}
+        cfg_harbor_address=${dic[cfg_harbor_address]}
+        cfg_harbor_project=${dic[cfg_harbor_project]}
+        tmp_dockerfile=${dic[tmp_dockerfile]}
+        tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}
+	module_path=`find $cfg_temp_dir/* -type d  -name  ${cmd_job_name}`
+	if test -z "$module_path"; then module_path=$cfg_temp_dir; fi
+        dic[tmp_build_dist_path]=$module_path
+	echo "xxxx:"${dic[tmp_build_dist_path]}
+        info "开始python项目镜像的构建"
+        cd ${dic[tmp_build_dist_path]}
+        check_env_by_cmd_v docker
+        # 构建镜像
+        image_path=$cfg_harbor_address/$cfg_harbor_project/${cmd_job_name}_${tmp_docker_image_suffix}:latest
+        docker build -t $image_path -f  $tmp_dockerfile  ${dic[tmp_build_dist_path]}
+
+        #推送镜像
+        info "开始向python推送镜像"
+        docker push $image_path
+        dic[tmp_image_path]=$image_path
 }
 
 function choose_dockerfile() {

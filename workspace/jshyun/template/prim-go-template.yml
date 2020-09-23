@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  ?module_name:
+    image: ?image_path
+    ports:
+      - "8093:8093"
+#      - "9001:9001"
+      - "8089:8089"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          memory: 600M
+        reservations:
+          memory: 250M
+    networks:
+      - ?network
+networks:
+  ?network:
+    external: true
