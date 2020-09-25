@@ -1,4 +1,6 @@
 FROM python
+MAINTAINER "srillia@163.com"
+LABEL maintainer='corp'
 
 ENV TZ=Asia/Shanghai
 ENV LANG=en_US.UTF-8i

@@ -86,7 +86,8 @@ function check_post_parmas() {
                 warn "job name can not be null ## $1 ##."; exit 1;
 	 fi
 	dic[cmd_job_name]=${dic[cmd_3]} 
-	dic[cfg_temp_dir]=/tmp/devops/${dic[opt_workspace]}/${dic[cmd_job_name]}
+	temp_dir=`cat /proc/sys/kernel/random/uuid`
+	dic[cfg_temp_dir]=/tmp/devops/${dic[opt_workspace]}/$temp_dir
 	rm -rf ${dic[cfg_temp_dir]}
 }
 
@@ -470,11 +471,11 @@ function local_deploy() {
 function remote_deploy() {
 
 	cfg_devops_path=${dic[cfg_devops_path]}
-    cfg_build_platform=${dic[cfg_build_platform]}
-    cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
+ 	cfg_build_platform=${dic[cfg_build_platform]}
+	cfg_swarm_stack_name=${dic[cfg_swarm_stack_name]}
 	cfg_deploy_target=${dic[cfg_deploy_target]}
-	cfg_deploy_gen_location=${dic[cfg_deploy_gen_location]}
-    cmd_job_name=${dic[cmd_job_name]}
+	cfg_deploy_gen_location=${dic[cfg_deploy_gen_location]}	
+	cmd_job_name=${dic[cmd_job_name]}
 
 	deploy_job_yml=$cfg_deploy_gen_location/${cmd_job_name}.yml
 
@@ -487,7 +488,7 @@ function remote_deploy() {
                 error '执行远程构建，deploy_target的配置不正确'
                 exit 1
         fi
-
+	remote_command=
 
         #创建或者更新镜像
         if [ "$cfg_build_platform" = "KUBERNETES" ]
@@ -502,10 +503,6 @@ function remote_deploy() {
                 info "开始使用docker swarm部署服务"
 		remote_command="cat $deploy_job_yml | ssh $user@$ip 'docker stack deploy -c - ${cfg_swarm_stack_name} --with-registry-auth'"
         fi
-	
-	remote_common_command="echo 'start prune remote images:';docker image prune -af --filter='label=maintainer=corp'"
-
-	remote_command="$remote_command;$remote_common_command"
 
 	expect << EOF
 
@@ -526,8 +523,13 @@ function prune() {
 	#删除源代码
 	cd $cfg_devops_path
 	rm -rf $cfg_temp_dir
-
-	#!清除没有运行的无用镜像
-	echo 'start prune local images:'
-	docker image prune -af --filter="label=maintainer=corp" --filter="until=24h"
+	image_num=`sudo docker image ls --filter="label=maintainer=corp"| grep harbor.jsy.com |awk "{print NR}" |tail -n1`
+	info "现有corp镜像数为："$image_num
+        if test -n "$image_num" ; then
+              if test  $image_num -gt 30; then
+                        #清除没有运行的无用镜像
+                        echo 'start prune local images:'
+                        docker image prune -af --filter="label=maintainer=corp"
+                fi
+        fi
 }
