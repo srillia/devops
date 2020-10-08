@@ -177,22 +177,23 @@ function go_build() {
 	cfg_harbor_project=${dic[cfg_harbor_project]}
 	tmp_dockerfile=${dic[tmp_dockerfile]}
 	tmp_docker_image_suffix=${dic[tmp_docker_image_suffix]}	
-
-	dic[tmp_go_workspace]=/tmp/devops-go
-	dic[tmp_go_workspace_src]=${dic[tmp_go_workspace]}/src
-	dic[tmp_go_workspace_src_ws]=${dic[tmp_go_workspace_src]}/${dic[opt_workspace]}
-	#生成gopath和src
-	if test ! -d "${dic[tmp_go_workspace_src_ws]}" ;then
-		mkdir -p ${dic[tmp_go_workspace_src_ws]}
-	fi
-	export GOAPTH=${dic[tmp_go_workspace]}
 	
-	rm -rf ${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
+	### 下面注释的代码为了兼容非go mod的项目,未来不支持非go mod，推荐使用go mod ###
+	#dic[tmp_go_workspace]=/tmp/devops-go
+	#dic[tmp_go_workspace_src]=${dic[tmp_go_workspace]}/src
+	#dic[tmp_go_workspace_src_ws]=${dic[tmp_go_workspace_src]}/${dic[opt_workspace]}
+	#生成gopath和src
+	#if test ! -d "${dic[tmp_go_workspace_src_ws]}" ;then
+	#	mkdir -p ${dic[tmp_go_workspace_src_ws]}
+	#fi
+	#export GOAPTH=${dic[tmp_go_workspace]}
+	
+	#rm -rf ${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
 
-	\mv $cfg_temp_dir ${dic[tmp_go_workspace_src_ws]}
-	dic[cfg_temp_dir]=${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
+	#\mv $cfg_temp_dir ${dic[tmp_go_workspace_src_ws]}
+	#dic[cfg_temp_dir]=${dic[tmp_go_workspace_src_ws]}/${cmd_job_name}
 
-
+	echo "go temp dir："${dic[cfg_temp_dir]}
 	module_path=`find ${dic[cfg_temp_dir]}/* -type d  -name  ${cmd_job_name}`
         if test -z "$module_path"; then module_path=${dic[cfg_temp_dir]}; fi
 
@@ -365,7 +366,7 @@ function choose_dockerfile() {
 	#info "开始复制dockerfile到构建目录"
 	if test -n "${opt_dockerfile}"
 	then
-		echo "埋点:执行命令行指定dockerfile${opt_dockerfile}"
+		echo "埋点:执行命令行,指定dockerfile:${opt_dockerfile}"
    		dic[tmp_dockerfile]=$cfg_dockerfile_path/${opt_dockerfile}-dockerfile 
 	else
 		dockerfiles=(${cfg_enable_dockerfiles//,/ })
