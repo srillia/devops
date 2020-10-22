@@ -1,14 +1,14 @@
-FROM python
+FROM unsun2020/python-scrapy
 MAINTAINER "srillia@163.com"
 LABEL maintainer='corp'
 
 ENV TZ=Asia/Shanghai
 ENV LANG=en_US.UTF-8i
 
-RUN pip3 install scrapy 
-RUN pip3 install PyMySQL
-RUN pip3 install scrapy-splash
-RUN pip3 install pymongo
+#RUN pip3 install scrapy 
+#RUN pip3 install PyMySQL
+#RUN pip3 install scrapy-splash
+#RUN pip3 install pymongo
 
 copy ./ /opt/crawler/
 #copy ./crawler /opt/

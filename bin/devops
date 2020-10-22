@@ -34,7 +34,7 @@ else
 	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[opt_workspace]}
         if test -f ${dic[cfg_devops_secret]} ; then
                 source ${dic[cfg_devops_secret]}
-                dic[cfg_deploy_target]=`eval echo '$'"${dic[opt_workspace]}"`
+                dic[cfg_deploy_target]=`eval echo '$'"${dic[opt_workspace]}" | base64 -d`
         fi
 fi
 

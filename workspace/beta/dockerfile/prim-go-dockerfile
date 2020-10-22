@@ -7,7 +7,6 @@ ENV LANG=en_US.UTF-8
 ENV RUN_ENV=dev
 
 ADD ./config /opt/config/
-ADD ./views /opt/views/
 COPY ./prim /opt/
 
 WORKDIR /opt
