@@ -200,7 +200,7 @@ function scm() {
     #生成日期和git日志版本后六位
     date=$(date +%Y.%m.%d-%H.%M.%S)
     last_log=$(git log --pretty=format:%h | head -1)
-    dic[tmp_docker_image_suffix]="${date}_${last_log}"
+    dic[tmp_docker_image_suffix]="${last_log}_${date}"
   elif [ -n "$opt_svn_url" ]; then
     check_env_by_cmd_v svn
     info '开始使用 svn 拉取代码'
@@ -210,7 +210,7 @@ function scm() {
     date=$(date +%Y.%m.%d-%H.%M.%S)
     tmp_log=$(svn log | head -2 | tail -1)
     last_log=${tmp_log%% *}
-    dic[tmp_docker_image_suffix]="${date}_${last_log}"
+    dic[tmp_docker_image_suffix]="${last_log}_${date}"
   else
     error "--git-url and --svn-url must has one"
     exit 1
