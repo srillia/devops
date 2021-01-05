@@ -17,6 +17,9 @@ source ${dic[cfg_devops_bin_path]}/log.sh
 #devops项目所在路径
 dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
 
+#java命令，选项默认值
+dic[opt_build_tool]=gradle
+
 #解析命令行参数
 parse_params "$@"
 
@@ -58,9 +61,6 @@ dic[cfg_java_extra_opts]=
 dic[cfg_dockerfile_path]=${dic[cfg_workspace_path]}/dockerfile
 
 dic[cfg_template_path]=${dic[cfg_workspace_path]}/template
-
-#java命令，选项默认值
-dic[opt_build_tool]=gradle
 
 
 #执行first命令

@@ -320,7 +320,7 @@ function java_build() {
 
   # 查找jar包名
   cd ${dic[tmp_build_dist_path]}
-  jar_name=$(ls | grep -v 'source' | grep ${cmd_job_name})
+  jar_name=$(ls | grep -v 'source' | grep "^${cmd_job_name}.*\.jar$")
 
   check_env_by_cmd_v docker
 
@@ -446,6 +446,7 @@ function render_template() {
   cd $cfg_template_path
   gen_long_time_str=$(date +%s%N)
 
+  info "${opt_template}"
   #处理模板路由信息
   if test -n "${opt_template}"; then
     \cp ./${opt_template}-template.yml ./${gen_long_time_str}.yml
