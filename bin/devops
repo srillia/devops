@@ -1,5 +1,13 @@
 #!/bin/bash
-
+function process_host_address() {
+  host=$1
+  if [[ $host == *:* ]] ; then
+      port=${host##*:}
+      if test "$port" = "80" ; then
+              host=${host%%:*}
+      fi
+  fi
+}
 #必须先声明
 declare -A dic
 
@@ -17,8 +25,10 @@ source ${dic[cfg_devops_bin_path]}/log.sh
 #devops项目所在路径
 dic[cfg_devops_path]=`cd ${dic[cfg_devops_bin_path]} && cd ../ && pwd`
 
+
 #java命令，选项默认值
 dic[opt_build_tool]=gradle
+
 
 #解析命令行参数
 parse_params "$@"
@@ -29,7 +39,7 @@ dic[cfg_workspace_dir_name]="workspace"
 source ${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/enable
 
 #如果命令行没有指定 --workspace 工作空间，那么使用enable文件配置的默认工作空间
-if test -z ${dic[opt_workspace]}; then
+if test -z "${dic[opt_workspace]}"; then
 	dic[cfg_enable_path]=$ENABEL_WORKSPACE_PATH
 	dic[opt_workspace]=${dic[cfg_enable_path]}
 	dic[cfg_workspace_path]=${dic[cfg_devops_path]}/${dic[cfg_workspace_dir_name]}/${dic[cfg_enable_path]}
@@ -42,17 +52,24 @@ else
 fi
 
 #设置deploy文件生成位置
-info "埋点: 当前的工作空间为:${opt_workspace}"
+info "埋点: 当前的工作空间为:${dic[opt_workspace]}"
 dic[cfg_deploy_gen_location]=${dic[cfg_devops_path]}/deploy/${dic[opt_workspace]}
 #加载配置
 source ${dic[cfg_workspace_path]}/config
 #读取配置变量
-dic[cfg_harbor_address]=$BUILD_HARBOR_ADDRESS
-dic[cfg_harbor_project]=$BUILD_HARBOR_PROJECT
+#docker swarm stack name默认为gaad
+if test -z "$BUILD_DOCKER_STACK_NAME" ; then
+  dic[cfg_swarm_stack_name]=gaad
+else
+  dic[cfg_swarm_stack_name]=$BUILD_DOCKER_STACK_NAME
+fi
+dic[cfg_docker_registry_address]=$BUILD_DOCKER_REGISTRY_ADDRESS
+
+
+process_host_address ${dic[cfg_docker_registry_address]}
+dic[cfg_docker_registry_root]=gaad
 dic[cfg_build_platform]=$BUILD_PLATFORM
-dic[cfg_swarm_stack_name]=$BUILD_DOCKER_STACK_NAME
 dic[cfg_enable_dockerfiles]=$BUILD_ENABEL_DOCKERFILES
-dic[cfg_swarm_network]=$BUILD_DOCKER_SWARM_NETWORK
 dic[cfg_enable_templates]=$BUILD_ENABEL_TEMPLATES
 dic[cfg_main_project_name]=
 dic[cfg_java_extra_opts]=
@@ -68,4 +85,5 @@ case ${dic[cmd_1]} in
         run) run; ;;
         *) echo "cannot find the cammand ${dic[cmd_1]}"; exit1 ; ;;
 esac
+
 
