@@ -1,5 +1,6 @@
 #!/bin/bash
 source ${dic[cfg_devops_bin_path]}/log.sh
+devops_version=1.7.1
 
 function check_env_by_cmd_v() {
   command -v $1 >/dev/null 2>&1 || (error "Need to install ##$1## command first and run this script again." && exit 1)
@@ -8,14 +9,18 @@ function check_env_by_cmd_v() {
 function parse_params() {
   case "$1" in
   -v)
-    echo "devops version 1.6.5"
+    echo "devops version ${devops_version}"
     exit 1
     ;;
   --version)
-    echo "devops version 1.6.5"
+    echo "devops version ${devops_version}"
     exit 1
     ;;
   -h)
+    devops_help
+    exit 1
+    ;;
+  --help)
     devops_help
     exit 1
     ;;
