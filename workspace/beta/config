@@ -2,18 +2,14 @@
 #构建平台，是 DOCKER_SWARM,KUBERNETES
 BUILD_PLATFORM="DOCKER_SWARM"
 
-BUILD_DOCKER_STACK_NAME="unsun"
+BUILD_DOCKER_STACK_NAME="gaad"
 
-BUILD_DOCKER_SWARM_NETWORK="jshyun_overlay_network"
+#配置docker registry仓库地址
+#BUILD_DOCKER_REGISTRY_ADDRESS=“192.168.xxx.xxx:5000”
+BUILD_DOCKER_REGISTRY_ADDRESS="harbor.jsy.com"
 
-#配置harbor仓库地址
-BUILD_HARBOR_ADDRESS="harbor.jsy.com"
+#启用dockerfile, 路由dockerfile 匹配 foo1-dockerfile,foo2-dockerfile
+#BUILD_ENABEL_DOCKERFILES="foo1，foo2"
 
-#配置harbor仓库
-BUILD_HARBOR_PROJECT="unsun"
-
-#启用dockerfile,路由dockerfile
-BUILD_ENABEL_DOCKERFILES="jpgcoll-engine"
-
-#启用模板
-BUILD_ENABEL_TEMPLATES="console-zuul,jshyun-zuul,mall-zuul,task-scheduler,middleware-zuul,entrance-management"
+#启用模板template, 路由template  匹配 foo1-dtemplate,foo2-template
+#BUILD_ENABEL_TEMPLATES="foo1，foo2"

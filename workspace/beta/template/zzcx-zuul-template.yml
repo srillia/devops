@@ -2,8 +2,8 @@ version: '3.4'
 services:
   ?module_name:
     image: ?image_path
-#    ports:
-#      - "?port:80"
+    ports:
+      - "18888:80"
     deploy:
       mode: replicated
       replicas: 1

@@ -3,7 +3,7 @@ services:
   ?module_name:
     image: ?image_path
     ports:
-      - "8094:80"
+      - "9091:80"
     deploy:
       mode: replicated
       replicas: 1
