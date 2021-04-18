@@ -1,10 +1,10 @@
-# srillia/devops
+# <center>srillia/devops</center>
 #### 作者：张正涵
 
 ## 最新动态
 devops 1.7.1发布
 
-> devops将做为[gaad](gaad.io)运维平台的底层架构，但是devops还保持独立的架构。
+> devops将做为[gaad](http://gaad.io)运维平台的底层架构，但是devops还保持独立的架构。
 
 devops 1.6.5发布
 
