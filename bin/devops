@@ -64,10 +64,14 @@ else
   dic[cfg_swarm_stack_name]=$BUILD_DOCKER_STACK_NAME
 fi
 dic[cfg_docker_registry_address]=$BUILD_DOCKER_REGISTRY_ADDRESS
+if test -z "$BUILD_DOCKER_REGISTRY_ROOT" ; then
+  dic[cfg_docker_registry_root]=gaad
+else
+  dic[ccfg_docker_registry_root]=$BUILD_DOCKER_REGISTRY_ROOT
+fi
 
 
 process_host_address ${dic[cfg_docker_registry_address]}
-dic[cfg_docker_registry_root]=gaad
 dic[cfg_build_platform]=$BUILD_PLATFORM
 dic[cfg_enable_dockerfiles]=$BUILD_ENABEL_DOCKERFILES
 dic[cfg_enable_templates]=$BUILD_ENABEL_TEMPLATES
