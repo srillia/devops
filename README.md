@@ -1,30 +1,31 @@
 # srillia/devops
-### 作者：张正涵
+#### 作者：张正涵
 
 ## 最新动态
+devops 1.7.1发布
+
+> devops将做为[gaad](gaad.io)运维平台的底层架构，但是devops还保持独立的架构。
+
 devops 1.6.5发布
-```
-加入go项目自动化部署的支持
-```
-devops 1.6发布
-1.6 增加新功能:
-```
-本地一套环境，支持任意远程集群发布
 
-(解决，devops必须在集群主机上进行构建的局限，现在可以用一个主机作构建，完全和远程集群服务器解耦和)
+>  加入go项目自动化部署的支持
 
-需要配置 deploy-target文件到 $HOME/.deploy/ 下，在workspace目录里面有样本文件
+devops 1.6.0发布
 
-deploy-target 不配置不启用远程部署，使用本地构建
+> 1. 本地一套环境，支持任意远程集群发布
+>    - 解决，devops必须在集群主机上进行构建的局限，现在可以用一个主机作构建，完全和远程集群服务器解耦和)
+>
+> 2. 需要配置 deploy-target文件到 $HOME/.deploy/ 下，在workspace目录里面有样本文件
+>
+> 3. deploy-target 不配置不启用远程部署，使用本地构建
+>
+> 4. 配置key需要和 --workspace 参数，和工作目录一致 例:
+>    - --workspace meal ,工作目录 meal, deploy-target 文件中存在 key 为meal 的主机配置
 
-配置key需要和 --workspace 参数，和工作目录一致 例:
-
-	--workspace meal ,工作目录 meal, deploy-target 文件中存在 key 为meal 的主机配置
-```
 devops 1.5.1已经发布release
 
 ## 简介
-基于jenkins publish over ssh 插件，执行的devops cicd远程脚本
+基于jenkins publish over ssh 插件，执行的devops 命令，完成 CICD
 
 ## 开始使用
 jenkins的部署
