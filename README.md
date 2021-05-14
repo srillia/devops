@@ -82,7 +82,7 @@ devops run vue --svn-url https://192.168.10.253/svn/sample  --dockerfile node --
 ```
 
 ## 详细说明
-+ 可以构建java项目，或者node的vue项目，更多语言构建支持后续发布
++ 可以构建java项目，或者node的vue项目，go项目，python项目等，更多语言构建支持后续发布
 + 可以选择不同的代码管理工具 --git-url --svn-url,这两个是必传参数
 + 可以选择不同的构建工具，java项目下，可以选择，gradle模式，或者maven模式
 + 可以选择不同的构建平台，docker-swarm,或者k8s,通过配置文件配置config.conf中
