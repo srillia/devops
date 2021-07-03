@@ -1,4 +1,4 @@
-FROM harbor.jsy.com/library/unsun-libreoffice:6
+FROM libreoffice:6
 MAINTAINER srilli@163.com
 LABEL maintainer='corp'
 

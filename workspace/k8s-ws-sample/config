@@ -1,14 +1,14 @@
 #构建平台，是 DOCKER_SWARM,KUBERNETES
 BUILD_PLATFORM="KUBERNETES"
-BUILD_DOCKER_STACK_NAME="unsun-test"
+BUILD_DOCKER_STACK_NAME="stack-name"
 
 #配置docker registry仓库地址
-#BUILD_DOCKER_REGISTRY_ADDRESS=“192.168.xxx.xxx:5000”
-BUILD_DOCKER_REGISTRY_ADDRESS="harbor.jsy.com"
+#BUILD_DOCKER_REGISTRY_ADDRESS="192.168.10.18:5000"
+BUILD_DOCKER_REGISTRY_ADDRESS="harbor.gaad.com"
 
 #启用dockerfile, 路由dockerfile 匹配 foo1-dockerfile,foo2-dockerfile
 #BUILD_ENABEL_DOCKERFILES="foo1，foo2"
 
-#启用模板template, 路由template  匹配 foo1-dtemplate,foo2-template
+#启用模板template, 路由template  匹配 foo1-template,foo2-template
 #BUILD_ENABEL_TEMPLATES="foo1，foo2"
 
